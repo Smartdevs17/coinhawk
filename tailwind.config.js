@@ -8,16 +8,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // CoinHawk Brand Colors
         hawk: {
-          primary: '#1a1f36',      // Deep navy
-          secondary: '#2d3748',    // Dark gray
-          accent: '#fbbf24',       // Golden yellow
+          primary: '#1a1f36',
+          secondary: '#2d3748',
+          accent: '#fbbf24',
           'accent-light': '#fcd34d',
           'accent-dark': '#f59e0b',
         },
-        
-        // Status Colors
         success: {
           50: '#ecfdf5',
           100: '#d1fae5',
@@ -39,16 +36,14 @@ module.exports = {
           600: '#d97706',
           700: '#b45309',
         },
-        
-        // Dark Theme Colors
         dark: {
-          bg: '#0f172a',           // Main background
-          surface: '#1e293b',      // Card backgrounds
-          'surface-light': '#334155', // Hover states
-          border: '#475569',       // Borders
-          'text-primary': '#f8fafc',   // Primary text
-          'text-secondary': '#cbd5e1', // Secondary text
-          'text-muted': '#94a3b8',     // Muted text
+          bg: '#0f172a',
+          surface: '#1e293b',
+          'surface-light': '#334155',
+          border: '#475569',
+          'text-primary': '#f8fafc',
+          'text-secondary': '#cbd5e1',
+          'text-muted': '#94a3b8',
         }
       },
     },
