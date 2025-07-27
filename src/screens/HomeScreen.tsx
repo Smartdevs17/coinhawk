@@ -58,7 +58,7 @@ export const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+      {/* <StatusBar barStyle="light-content" backgroundColor="#0f172a" /> */}
       
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-dark-surface border-b border-dark-border">
@@ -94,7 +94,7 @@ export const HomeScreen: React.FC = () => {
         {/* Timeframe Selector */}
         <View className="px-4 mb-4">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View className="flex-row space-x-2">
+            <View className="flex-row gap-x-2">
               {TIMEFRAMES.map((tf) => (
                 <TouchableOpacity
                   key={tf}
@@ -140,7 +140,7 @@ export const HomeScreen: React.FC = () => {
         {/* Quick Actions */}
         <View className="px-4 py-6">
           <Text className="text-lg font-semibold text-dark-text-primary mb-3">Quick Actions</Text>
-          <View className="flex-row space-x-3">
+          <View className="flex-row gap-x-3">
             <TouchableOpacity className="flex-1 bg-hawk-accent rounded-xl p-4 items-center">
               <Icon name="📈" size={24} color="#1a1f36" />
               <Text className="text-hawk-primary font-semibold mt-2">Trade</Text>
