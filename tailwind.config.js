@@ -4,7 +4,7 @@ module.exports = {
     "./App.{js,jsx,ts,tsx}",
     "./src/**/*.{js,jsx,ts,tsx}"
   ],
-    presets: [require("nativewind/preset")],
+  presets: [require("nativewind/preset")],
   theme: {
     extend: {
       colors: {
@@ -50,35 +50,6 @@ module.exports = {
           'text-secondary': '#cbd5e1', // Secondary text
           'text-muted': '#94a3b8',     // Muted text
         }
-      },
-      
-      fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Consolas', 'Monaco', 'monospace'],
-      },
-      
-      fontSize: {
-        'xs': '0.75rem',     // 12px
-        'sm': '0.875rem',    // 14px
-        'base': '1rem',      // 16px
-        'lg': '1.125rem',    // 18px
-        'xl': '1.25rem',     // 20px
-        '2xl': '1.5rem',     // 24px
-        '3xl': '1.875rem',   // 30px
-        '4xl': '2.25rem',    // 36px
-      },
-      
-      spacing: {
-        '18': '4.5rem',      // 72px
-        '22': '5.5rem',      // 88px
-        '88': '22rem',       // 352px
-        '128': '32rem',      // 512px
-      },
-      
-      borderRadius: {
-        'xl': '0.75rem',     // 12px
-        '2xl': '1rem',       // 16px
-        '3xl': '1.5rem',     // 24px
       },
     },
   },
