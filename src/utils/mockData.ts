@@ -229,3 +229,4 @@ export const MOCK_PRICE_ALERTS = [
     isActive: true,
   }
 ];
+

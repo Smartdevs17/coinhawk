@@ -1,4 +1,3 @@
-// src/navigation/TabNavigator.tsx
 import React from 'react';
 import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,15 +6,16 @@ import { NavigationContainer } from '@react-navigation/native';
 // Import screens
 import { HomeScreen } from '../screens/HomeScreen';
 import { TrendingScreen } from '../screens/TrendingScreen';
-// import { PortfolioScreen } from '../screens/PortfolioScreen';
+import { PortfolioScreen } from '../screens/PortfolioScreen';
 // import { WatchlistScreen } from '../screens/WatchlistScreen';
 // import { TradeScreen } from '../screens/TradeScreen';
 
+// Import UI components
 import { Icon } from '../components/ui';
 
 const Tab = createBottomTabNavigator();
 
-// Placeholder screens for now
+// Placeholder screens for remaining tabs
 const PlaceholderScreen = ({ title }: { title: string }) => (
   <View className="flex-1 bg-dark-bg items-center justify-center">
     <Icon name="🚧" size={48} color="#fbbf24" />
@@ -24,7 +24,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
   </View>
 );
 
-const PortfolioScreen = () => <PlaceholderScreen title="Portfolio" />;
 const WatchlistScreen = () => <PlaceholderScreen title="Watchlist" />;
 const TradeScreen = () => <PlaceholderScreen title="Trade" />;
 
