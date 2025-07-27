@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TextProps } from 'react-native';
 
-interface IconProps extends Omit<TextProps, 'children'> {
+export interface IconProps extends Omit<TextProps, 'children'> {
   name: string;
   size?: number;
   color?: string;
