@@ -10,5 +10,5 @@
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts"
-  ]
+, "src/types/Watchlist.ts"  ]
 }

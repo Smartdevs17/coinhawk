@@ -1,4 +1,4 @@
-import { CoinPost, MarketData, PortfolioData, Holdings } from '../types';
+import { CoinPost, MarketData, PortfolioData, Holdings, PriceAlert, WatchlistData } from '../types';
 
 // Extended trending posts for TrendingScreen
 export const EXTENDED_TRENDING_POSTS: CoinPost[] = [
@@ -105,6 +105,32 @@ export const EXTENDED_TRENDING_POSTS: CoinPost[] = [
     verified: false,
     rank: 8,
     description: 'Anti-establishment token for skeptics and contrarian investors.',
+  },
+  {
+    id: '9',
+    name: 'BaseSwap',
+    symbol: 'BSWP',
+    price: '$0.7891',
+    change24h: '+3.7%',
+    marketCap: '$18.4M',
+    volume24h: '$2.9M',
+    holders: 9876,
+    verified: true,
+    rank: 9,
+    description: 'Decentralized exchange token with liquidity mining rewards.',
+  },
+  {
+    id: '10',
+    name: 'ChainLink',
+    symbol: 'LINK',
+    price: '$14.5678',
+    change24h: '-1.8%',
+    marketCap: '$234.5M',
+    volume24h: '$12.3M',
+    holders: 45678,
+    verified: true,
+    rank: 10,
+    description: 'Oracle network providing real-world data to smart contracts.',
   }
 ];
 
@@ -153,7 +179,56 @@ export const MOCK_HOLDINGS: Holdings[] = [
 ];
 
 // Watchlist mock data (coin IDs that user is watching)
-export const MOCK_WATCHLIST_IDS = ['2', '5', '6', '8'];
+export const MOCK_WATCHLIST_IDS = ['2', '5', '6', '8', '9'];
+
+// Price alerts mock data
+export const MOCK_PRICE_ALERTS: PriceAlert[] = [
+  {
+    id: '1',
+    coinPostId: '2',
+    type: 'above',
+    targetPrice: '$0.10',
+    currentPrice: '$0.0867',
+    isActive: true,
+    createdAt: '2025-01-15T10:30:00Z',
+  },
+  {
+    id: '2',
+    coinPostId: '5', 
+    type: 'below',
+    targetPrice: '$2.00',
+    currentPrice: '$2.1890',
+    isActive: true,
+    createdAt: '2025-01-14T15:45:00Z',
+  },
+  {
+    id: '3',
+    coinPostId: '6',
+    type: 'above',
+    targetPrice: '$0.006',
+    currentPrice: '$0.0045',
+    isActive: false,
+    createdAt: '2025-01-13T08:20:00Z',
+  },
+  {
+    id: '4',
+    coinPostId: '8',
+    type: 'below',
+    targetPrice: '$0.001',
+    currentPrice: '$0.0012',
+    isActive: true,
+    createdAt: '2025-01-12T14:10:00Z',
+  }
+];
+
+// Watchlist summary data
+export const MOCK_WATCHLIST_DATA: WatchlistData = {
+  totalWatching: MOCK_WATCHLIST_IDS.length,
+  activeAlerts: MOCK_PRICE_ALERTS.filter(alert => alert.isActive).length,
+  gainers: 2, // Will be calculated dynamically in the component
+  losers: 3,  // Will be calculated dynamically in the component
+  lastUpdated: '2025-01-27T12:00:00Z',
+};
 
 // Market statistics
 export const MOCK_MARKET_STATS = {
@@ -209,24 +284,3 @@ export const MOCK_RECENT_TRADES = [
     timestamp: '12 min ago',
   }
 ];
-
-// Price alerts mock data
-export const MOCK_PRICE_ALERTS = [
-  {
-    id: '1',
-    coinPostId: '2',
-    type: 'above' as const,
-    targetPrice: '$0.10',
-    currentPrice: '$0.0867',
-    isActive: true,
-  },
-  {
-    id: '2',
-    coinPostId: '5', 
-    type: 'below' as const,
-    targetPrice: '$2.00',
-    currentPrice: '$2.1890',
-    isActive: true,
-  }
-];
-

@@ -7,7 +7,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { HomeScreen } from '../screens/HomeScreen';
 import { TrendingScreen } from '../screens/TrendingScreen';
 import { PortfolioScreen } from '../screens/PortfolioScreen';
-// import { WatchlistScreen } from '../screens/WatchlistScreen';
+import { WatchlistScreen } from '../screens/WatchlistScreen';
 // import { TradeScreen } from '../screens/TradeScreen';
 
 // Import UI components
@@ -15,7 +15,7 @@ import { Icon } from '../components/ui';
 
 const Tab = createBottomTabNavigator();
 
-// Placeholder screens for remaining tabs
+// Placeholder screen for Trade (still in development)
 const PlaceholderScreen = ({ title }: { title: string }) => (
   <View className="flex-1 bg-dark-bg items-center justify-center">
     <Icon name="🚧" size={48} color="#fbbf24" />
@@ -24,7 +24,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
   </View>
 );
 
-const WatchlistScreen = () => <PlaceholderScreen title="Watchlist" />;
 const TradeScreen = () => <PlaceholderScreen title="Trade" />;
 
 export const AppNavigator: React.FC = () => {
@@ -69,35 +68,15 @@ export const AppNavigator: React.FC = () => {
                 break;
             }
             
-            return <Icon name={iconName} size={24} color={color} />;
+            return <Icon name={iconName} size={size} color={color} />;
           },
         })}
       >
-        <Tab.Screen 
-          name="Home" 
-          component={HomeScreen}
-          options={{ title: 'Home' }}
-        />
-        <Tab.Screen 
-          name="Trending" 
-          component={TrendingScreen}
-          options={{ title: 'Trending' }}
-        />
-        <Tab.Screen 
-          name="Portfolio" 
-          component={PortfolioScreen}
-          options={{ title: 'Portfolio' }}
-        />
-        <Tab.Screen 
-          name="Watchlist" 
-          component={WatchlistScreen}
-          options={{ title: 'Watchlist' }}
-        />
-        <Tab.Screen 
-          name="Trade" 
-          component={TradeScreen}
-          options={{ title: 'Trade' }}
-        />
+        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Trending" component={TrendingScreen} />
+        <Tab.Screen name="Portfolio" component={PortfolioScreen} />
+        <Tab.Screen name="Watchlist" component={WatchlistScreen} />
+        <Tab.Screen name="Trade" component={TradeScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
