@@ -6,7 +6,12 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build:apk": "npx expo export --platform android && npx expo run:android --variant release",
+    "build:debug-apk": "npx expo export --platform android && npx expo run:android --variant debug", 
+    "build:gradle": "npx expo prebuild --platform android && cd android && ./gradlew assembleRelease && cd ..",
+    "copy:apk": "cp android/app/build/outputs/apk/release/app-release.apk ./CoinHawk-$(date +%Y%m%d).apk && ls -lh CoinHawk-*.apk",
+    "clean:build": "rm -rf android/app/build && rm -rf .expo"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -21,7 +26,8 @@
     "react-native": "0.79.5",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-screens": "~4.11.1"
+    "react-native-screens": "~4.11.1",
+    "expo-dev-client": "~5.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
