@@ -91,7 +91,6 @@ export const WatchlistScreen: React.FC = () => {
           style: 'destructive',
           onPress: () => {
             setWatchlistIds(prev => prev.filter(id => id !== coinId));
-            // Also remove any alerts for this coin
             setAlerts(prev => prev.filter(alert => alert.coinPostId !== coinId));
           }
         },
@@ -137,151 +136,128 @@ export const WatchlistScreen: React.FC = () => {
     setAlerts(prev => prev.filter(alert => alert.id !== alertId));
   };
 
-  // const renderWatchlistItem = ({ item }: { item: WatchlistItem }) => (
-  //   <TouchableOpacity>
-  //     <Card variant="surface" className="mb-3">
-  //       <View className="flex-row items-center">
-  //         {/* Coin Icon and Info */}
-  //         <View className="w-12 h-12 bg-hawk-accent rounded-full items-center justify-center mr-3">
-  //           <Text className="text-hawk-primary font-bold text-lg">
-  //             {item.symbol.slice(0, 2)}
-  //           </Text>
-  //         </View>
-          
-  //         <View className="flex-1">
-  //           <View className="flex-row items-center">
-  //             <Text className="text-dark-text-primary font-semibold text-base">
-  //               {item.name}
-  //             </Text>
-  //             {item.verified && (
-  //               <Icon name="✓" size={14} color="#10b981" className="ml-1" />
-  //             )}
-  //           </View>
-  //           <Text className="text-dark-text-secondary text-sm">{item.symbol}</Text>
-  //           <View className="flex-row items-center mt-1">
-  //             <Text className="text-dark-text-muted text-xs">
-  //               {item.holders.toLocaleString()} holders
-  //             </Text>
-  //             {item.alertsCount && item.alertsCount > 0 && (
-  //               <>
-  //                 <Text className="text-dark-text-muted text-xs"> • </Text>
-  //                 <Icon 
-  //                   name="🔔" 
-  //                   size={12} 
-  //                   color={item.isAlertsActive ? "#fbbf24" : "#64748b"} 
-  //                 />
-  //                 <Text className="text-xs text-hawk-accent ml-1">
-  //                   {item.alertsCount}
-  //                 </Text>
-  //               </>
-  //             )}
-  //           </View>
-  //         </View>
+  // Completely rewritten WatchlistItem component with no whitespace issues
+  const WatchlistItemComponent: React.FC<{ 
+    item: WatchlistItem; 
+    onOpenAlert: (coin: CoinPost) => void;
+    onRemoveFromWatchlist: (coinId: string) => void;
+  }> = ({ item, onOpenAlert, onRemoveFromWatchlist }) => {
+    
+    const handleAlertPress = () => {
+      onOpenAlert(item);
+    };
 
-  //         {/* Price and Change */}
-  //         <View className="items-end mr-3">
-  //           <Text className="text-dark-text-primary font-semibold text-base">
-  //             {item.price}
-  //           </Text>
-  //           <PriceChangeIndicator 
-  //             change={item.change24h} 
-  //             size="sm" 
-  //             className="mt-1"
-  //           />
-  //         </View>
+    const handleRemovePress = () => {
+      onRemoveFromWatchlist(item.id);
+    };
 
-  //         {/* Action Buttons */}
-  //         <View>
-  //           <TouchableOpacity
-  //             onPress={() => openAlertModal(item)}
-  //             className="bg-hawk-accent bg-opacity-20 rounded-lg p-2 mb-2"
-  //           >
-  //             <Icon name="🔔" size={16} color="#fbbf24" />
-  //           </TouchableOpacity>
-  //           <TouchableOpacity
-  //             onPress={() => removeFromWatchlist(item.id)}
-  //             className="bg-danger-500 bg-opacity-20 rounded-lg p-2"
-  //           >
-  //             <Icon name="✕" size={16} color="#ef4444" />
-  //           </TouchableOpacity>
-  //         </View>
-  //       </View>
-  //     </Card>
-  //   </TouchableOpacity>
-  // );
-
-  const renderWatchlistItem = ({ item }: { item: WatchlistItem }) => (
-  <TouchableOpacity>
-    <Card variant="surface" className="mb-3">
-      <View className="flex-row items-center">
-        {/* Coin Icon and Info */}
-        <View className="w-12 h-12 bg-hawk-accent rounded-full items-center justify-center mr-3">
-          <Text className="text-hawk-primary font-bold text-lg">
-            {item.symbol.slice(0, 2)}
+    // Render alert indicator if there are alerts
+    const renderAlertIndicator = () => {
+      if (!item.alertsCount || item.alertsCount === 0) {
+        return null;
+      }
+      
+      return (
+        <View className="flex-row items-center ml-2">
+          <Text className="text-dark-text-muted text-xs">•</Text>
+          <View className="ml-1">
+            <Icon 
+              name="🔔" 
+              size={12} 
+              color={item.isAlertsActive ? "#fbbf24" : "#64748b"} 
+            />
+          </View>
+          <Text className="text-xs text-hawk-accent ml-1">
+            {item.alertsCount}
           </Text>
         </View>
-        
-        <View className="flex-1">
+      );
+    };
+
+    // Render verification badge
+    const renderVerificationBadge = () => {
+      if (!item.verified) {
+        return null;
+      }
+      
+      return (
+        <View className="ml-2">
+          <Icon name="✓" size={14} color="#10b981" />
+        </View>
+      );
+    };
+
+    return (
+      <TouchableOpacity activeOpacity={0.7} className="mb-3">
+        <View className="bg-dark-surface border border-dark-border rounded-xl p-4">
           <View className="flex-row items-center">
-            <Text className="text-dark-text-primary font-semibold text-base">
-              {item.name}
-            </Text>
-            {item.verified && (
-              <Text style={{ fontSize: 14, color: '#10b981' }} className="ml-1">
-                ✓
+            <View className="w-12 h-12 bg-hawk-accent rounded-full items-center justify-center mr-3">
+              <Text className="text-hawk-primary font-bold text-lg">
+                {item.symbol.substring(0, 2)}
               </Text>
-            )}
-          </View>
-          <Text className="text-dark-text-secondary text-sm">{item.symbol}</Text>
-          <View className="flex-row items-center mt-1">
-            <Text className="text-dark-text-muted text-xs">
-              {item.holders.toLocaleString()} holders
-            </Text>
-            {item.alertsCount && item.alertsCount > 0 && (
-              <>
-                <Text className="text-dark-text-muted text-xs"> • </Text>
-                <Text style={{ fontSize: 12, color: item.isAlertsActive ? '#fbbf24' : '#64748b' }}>
-                  🔔
+            </View>
+            <View className="flex-1 mr-3">
+              <View className="flex-row items-center mb-1">
+                <Text className="text-dark-text-primary font-semibold text-base">
+                  {item.name}
                 </Text>
-                <Text className="text-xs text-hawk-accent ml-1">
-                  {item.alertsCount}
+                {renderVerificationBadge()}
+              </View>
+              <Text className="text-dark-text-secondary text-sm mb-1">
+                {item.symbol}
+              </Text>
+              <View className="flex-row items-center">
+                <Text className="text-dark-text-muted text-xs">
+                  {item.holders.toLocaleString()} holders
                 </Text>
-              </>
-            )}
+                {renderAlertIndicator()}
+              </View>
+            </View>
+            <View className="items-end mr-3">
+              <Text className="text-dark-text-primary font-semibold text-base mb-1">
+                {item.price}
+              </Text>
+              <PriceChangeIndicator 
+                change={item.change24h} 
+                size="sm"
+              />
+            </View>
+            <View className="items-center">
+              <TouchableOpacity
+                onPress={handleAlertPress}
+                className="bg-hawk-accent bg-opacity-20 rounded-lg p-2 mb-2"
+                activeOpacity={0.7}
+              >
+                <Icon name="🔔" size={16} color="#fbbf24" />
+              </TouchableOpacity>
+                <TouchableOpacity
+                onPress={handleRemovePress}
+                className="rounded-lg p-2"
+                style={{
+                  backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                  borderWidth: 1,
+                  borderColor: '#ef4444',
+                }}
+                activeOpacity={0.7}
+                >
+                <Icon name="✕" size={16} color="#ef4444" />
+                </TouchableOpacity>
+            </View>
           </View>
         </View>
+      </TouchableOpacity>
+    );
+  };
 
-        {/* Price and Change */}
-        <View className="items-end mr-3">
-          <Text className="text-dark-text-primary font-semibold text-base">
-            {item.price}
-          </Text>
-          <PriceChangeIndicator 
-            change={item.change24h} 
-            size="sm" 
-            className="mt-1"
-          />
-        </View>
-
-        {/* Action Buttons */}
-        <View>
-          <TouchableOpacity
-            onPress={() => openAlertModal(item)}
-            className="bg-hawk-accent bg-opacity-20 rounded-lg p-2 mb-2"
-          >
-            <Text style={{ fontSize: 16, color: '#fbbf24' }}>🔔</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => removeFromWatchlist(item.id)}
-            className="bg-danger-500 bg-opacity-20 rounded-lg p-2"
-          >
-            <Text style={{ fontSize: 16, color: '#ef4444' }}>✕</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Card>
-  </TouchableOpacity>
-);
+  const renderWatchlistItem = ({ item }: { item: WatchlistItem }) => {
+    return (
+      <WatchlistItemComponent 
+        item={item}
+        onOpenAlert={openAlertModal}
+        onRemoveFromWatchlist={removeFromWatchlist}
+      />
+    );
+  };
 
   const renderAvailableCoin = ({ item }: { item: CoinPost }) => (
     <TouchableOpacity onPress={() => addToWatchlist(item.id)}>
@@ -343,11 +319,11 @@ export const WatchlistScreen: React.FC = () => {
                   : 'bg-dark-border'
               }`}
             >
-              <Text className={`text-xs font-medium ${
-                alert.isActive ? 'text-hawk-accent' : 'text-dark-text-muted'
-              }`}>
+                <Text className={`text-xs font-bold ${
+                alert.isActive ? 'text-dark-text-primary' : 'text-dark-text-muted'
+                }`}>
                 {alert.isActive ? 'ON' : 'OFF'}
-              </Text>
+                </Text>
             </TouchableOpacity>
             
             <TouchableOpacity
