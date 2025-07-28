@@ -383,7 +383,10 @@ export const WatchlistScreen: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-4">
+      <ScrollView
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: 112 }} // 64 (tab height) + extra space
+      >
         {/* Watchlist Items */}
         {watchlistCoins.length > 0 ? (
           <View className="py-4">

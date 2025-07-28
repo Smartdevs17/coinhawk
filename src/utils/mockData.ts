@@ -1,4 +1,4 @@
-import { CoinPost, MarketData, PortfolioData, Holdings, PriceAlert, WatchlistData } from '../types';
+import { CoinPost, MarketData, PortfolioData, Holdings, PriceAlert, WatchlistData, OrderBookEntry, TradingBalance } from '../types';
 
 // Extended trending posts for TrendingScreen
 export const EXTENDED_TRENDING_POSTS: CoinPost[] = [
@@ -284,3 +284,118 @@ export const MOCK_RECENT_TRADES = [
     timestamp: '12 min ago',
   }
 ];
+
+// Mock order book data
+export const MOCK_ORDER_BOOK = {
+  bids: [
+    { price: '$0.1230', amount: '25,000', total: '$3,075.00' },
+    { price: '$0.1229', amount: '15,000', total: '$1,843.50' },
+    { price: '$0.1228', amount: '30,000', total: '$3,684.00' },
+    { price: '$0.1227', amount: '12,500', total: '$1,533.75' },
+    { price: '$0.1226', amount: '18,000', total: '$2,206.80' },
+    { price: '$0.1225', amount: '22,000', total: '$2,695.00' },
+    { price: '$0.1224', amount: '35,000', total: '$4,284.00' },
+    { price: '$0.1223', amount: '14,500', total: '$1,773.35' },
+  ] as OrderBookEntry[],
+  asks: [
+    { price: '$0.1235', amount: '22,000', total: '$2,717.00' },
+    { price: '$0.1236', amount: '17,500', total: '$2,163.00' },
+    { price: '$0.1237', amount: '28,000', total: '$3,463.60' },
+    { price: '$0.1238', amount: '11,000', total: '$1,361.80' },
+    { price: '$0.1239', amount: '20,000', total: '$2,478.00' },
+    { price: '$0.1240', amount: '16,500', total: '$2,046.00' },
+    { price: '$0.1241', amount: '24,000', total: '$2,978.40' },
+    { price: '$0.1242', amount: '19,000', total: '$2,359.80' },
+  ] as OrderBookEntry[],
+};
+
+// Mock trading balances
+export const MOCK_TRADING_BALANCES: TradingBalance[] = [
+  { 
+    currency: 'USDC', 
+    available: '$5,234.67', 
+    locked: '$0.00', 
+    total: '$5,234.67' 
+  },
+  { 
+    currency: 'ETH', 
+    available: '2.45 ETH', 
+    locked: '0.0 ETH', 
+    total: '2.45 ETH' 
+  },
+  { 
+    currency: 'BGLD', 
+    available: '10,000', 
+    locked: '0', 
+    total: '10,000' 
+  },
+  { 
+    currency: 'HAWK', 
+    available: '5,000', 
+    locked: '0', 
+    total: '5,000' 
+  },
+  { 
+    currency: 'BPEPE', 
+    available: '25,000', 
+    locked: '0', 
+    total: '25,000' 
+  },
+  { 
+    currency: 'BART', 
+    available: '12,500', 
+    locked: '0', 
+    total: '12,500' 
+  },
+];
+
+// Extended recent trades with more history
+export const EXTENDED_RECENT_TRADES = [
+  ...MOCK_RECENT_TRADES,
+  {
+    id: '4',
+    pair: 'BART/USDC',
+    type: 'Buy' as const,
+    amount: '2,500',
+    price: '$0.3456',
+    total: '$864.00',
+    timestamp: '15 min ago',
+  },
+  {
+    id: '5', 
+    pair: 'BPEPE/USDC',
+    type: 'Sell' as const,
+    amount: '8,000',
+    price: '$0.0123',
+    total: '$98.40',
+    timestamp: '22 min ago',
+  },
+  {
+    id: '6',
+    pair: 'HAWK/ETH', 
+    type: 'Buy' as const,
+    amount: '1,200',
+    price: '$1.2567',
+    total: '$1,508.04',
+    timestamp: '35 min ago',
+  },
+  {
+    id: '7',
+    pair: 'BGLD/USDC',
+    type: 'Sell' as const,
+    amount: '3,500',
+    price: '$0.1234',
+    total: '$431.90',
+    timestamp: '1 hour ago',
+  },
+];
+
+// Mock trading fees configuration
+export const MOCK_TRADING_CONFIG = {
+  makerFee: 0.002, // 0.2%
+  takerFee: 0.005, // 0.5%
+  minimumOrderSize: 10, // Minimum $10 order
+  maximumOrderSize: 50000, // Maximum $50,000 order
+  supportedOrderTypes: ['Market', 'Limit'],
+  supportedTimeInForce: ['GTC', 'IOC', 'FOK'], // Good Till Cancelled, Immediate or Cancel, Fill or Kill
+};

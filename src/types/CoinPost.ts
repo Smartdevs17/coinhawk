@@ -45,3 +45,39 @@ export type TradeType = typeof TRADE_TYPES[number];
 
 export const ORDER_TYPES = ['Market', 'Limit'] as const;
 export type OrderType = typeof ORDER_TYPES[number];
+
+// Trading specific interfaces
+export interface OrderBookEntry {
+  price: string;
+  amount: string;
+  total: string;
+}
+
+export interface TradingBalance {
+  currency: string;
+  available: string;
+  locked: string;
+  total: string;
+}
+
+export interface OrderSummary {
+  amount: string;
+  price: string;
+  subtotal: string;
+  fees: string;
+  total: string;
+}
+
+// Trading order interface
+export interface TradingOrder {
+  id: string;
+  coinPostId: string;
+  type: TradeType;
+  orderType: OrderType;
+  amount: string;
+  price: string;
+  total: string;
+  status: 'pending' | 'filled' | 'cancelled' | 'partial';
+  timestamp: string;
+  fees: string;
+}

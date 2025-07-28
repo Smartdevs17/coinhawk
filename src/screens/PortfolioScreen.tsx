@@ -219,7 +219,11 @@ export const PortfolioScreen: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 112 }} // 64 (tab height) + 48 (extra space)
+      >
         {/* Portfolio Overview */}
         <View className="p-4">
           <Card variant="surface" padding="lg">

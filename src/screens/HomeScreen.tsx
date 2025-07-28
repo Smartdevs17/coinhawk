@@ -74,7 +74,11 @@ export const HomeScreen: React.FC = () => {
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 112 }} // 64 (tab height) + extra space
+      >
         {/* Market Overview */}
         <View className="p-4">
           <Text className="text-lg font-semibold text-dark-text-primary mb-3">Market Overview</Text>

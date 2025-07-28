@@ -267,7 +267,7 @@ export const TrendingScreen: React.FC = () => {
         data={filteredAndSortedPosts}
         renderItem={renderCoinPost}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <Card variant="surface" className="py-8">
