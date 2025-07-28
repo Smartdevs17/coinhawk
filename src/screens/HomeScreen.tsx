@@ -59,7 +59,7 @@ export const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">      
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-6 bg-dark-surface border-b border-dark-border">
+      <View className="flex-row items-center justify-between px-4 py-8 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center">
           <Icon name="🦅" size={24} />
           <Text className="text-xl font-bold text-dark-text-primary ml-2">CoinHawk</Text>

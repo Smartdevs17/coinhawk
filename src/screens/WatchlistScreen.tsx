@@ -341,7 +341,7 @@ export const WatchlistScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
       {/* Header */}
-      <View className="px-4 py-6 bg-dark-surface border-b border-dark-border">
+      <View className="px-4 py-8 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-xl font-bold text-dark-text-primary">👀 Watchlist</Text>
           <View className="flex-row gap-x-3">
