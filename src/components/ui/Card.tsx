@@ -65,14 +65,16 @@ export const Card: React.FC<CardProps> = ({
     }
   };
 
+  const classNames = [
+    getVariantStyles(),
+    getPaddingStyles(),
+    getRoundedStyles(),
+    className || ''
+  ].filter(Boolean).join(' ');
+
   return (
     <View
-      className={`
-        ${getVariantStyles()}
-        ${getPaddingStyles()}
-        ${getRoundedStyles()}
-        ${className || ''}
-      `.trim()}
+      className={classNames}
       {...props}
     >
       {children}
