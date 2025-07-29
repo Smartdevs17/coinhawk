@@ -29,16 +29,18 @@ interface UseWatchlistReturn {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   
-  // Actions
-  addToWatchlist: (coinId: string) => Promise<void>;
-  removeFromWatchlist: (coinId: string) => Promise<void>;
-  createAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>) => Promise<void>;
-  toggleAlert: (alertId: string) => Promise<void>;
-  deleteAlert: (alertId: string) => Promise<void>;
+  // Actions with toast support
+  addToWatchlist: (coinId: string, coinName?: string) => Promise<boolean>;
+  removeFromWatchlist: (coinId: string, coinName?: string) => Promise<boolean>;
+  createAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>, coinName?: string) => Promise<boolean>;
+  toggleAlert: (alertId: string, coinName?: string) => Promise<boolean>;
+  deleteAlert: (alertId: string, coinName?: string) => Promise<boolean>;
   refreshData: () => Promise<void>;
 }
 
-export const useWatchlist = (): UseWatchlistReturn => {
+export const useWatchlist = (
+  onShowToast?: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void
+): UseWatchlistReturn => {
   // State
   const [watchlistIds, setWatchlistIds] = useState<string[]>([]);
   const [allCoins, setAllCoins] = useState<CoinPost[]>([]);
@@ -48,6 +50,13 @@ export const useWatchlist = (): UseWatchlistReturn => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Helper function to show toast
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+    if (onShowToast) {
+      onShowToast(message, type);
+    }
+  };
 
   // Derived state
   const watchlistCoins: WatchlistItem[] = allCoins
@@ -89,7 +98,9 @@ export const useWatchlist = (): UseWatchlistReturn => {
 
     } catch (err) {
       console.error('Error initializing watchlist data:', err);
-      setError('Failed to load watchlist data');
+      const errorMessage = 'Failed to load watchlist data';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -110,28 +121,38 @@ export const useWatchlist = (): UseWatchlistReturn => {
       setAllCoins(searchResults);
     } catch (err) {
       console.error('Error searching coins:', err);
-      // Don't set main error state for search failures
+      // Don't set main error state for search failures, just show toast
+      showToast('Search failed. Please try again.', 'warning');
     } finally {
       setSearchLoading(false);
     }
   }, []);
 
-  // Actions
-  const addToWatchlist = useCallback(async (coinId: string) => {
+  // Actions with toast feedback
+  const addToWatchlist = useCallback(async (coinId: string, coinName?: string): Promise<boolean> => {
     try {
       const response = await watchlistApi.addToWatchlist(coinId);
       
       if (response.success) {
         setWatchlistIds(prev => [...prev, coinId]);
         setError(null);
+        showToast(
+          `${coinName || 'Coin'} added to watchlist successfully!`, 
+          'success'
+        );
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Error adding to watchlist:', err);
-      setError('Failed to add coin to watchlist');
+      const errorMessage = `Failed to add ${coinName || 'coin'} to watchlist`;
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      return false;
     }
   }, []);
 
-  const removeFromWatchlist = useCallback(async (coinId: string) => {
+  const removeFromWatchlist = useCallback(async (coinId: string, coinName?: string): Promise<boolean> => {
     try {
       const response = await watchlistApi.removeFromWatchlist(coinId);
       
@@ -140,31 +161,52 @@ export const useWatchlist = (): UseWatchlistReturn => {
         // Also remove any alerts for this coin
         setAlerts(prev => prev.filter(alert => alert.coinPostId !== coinId));
         setError(null);
+        showToast(
+          `${coinName || 'Coin'} removed from watchlist`, 
+          'success'
+        );
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Error removing from watchlist:', err);
-      setError('Failed to remove coin from watchlist');
+      const errorMessage = `Failed to remove ${coinName || 'coin'} from watchlist`;
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      return false;
     }
   }, []);
 
-  const createAlert = useCallback(async (alertData: Omit<PriceAlert, 'id' | 'createdAt'>) => {
+  const createAlert = useCallback(async (
+    alertData: Omit<PriceAlert, 'id' | 'createdAt'>, 
+    coinName?: string
+  ): Promise<boolean> => {
     try {
       const response = await watchlistApi.createAlert(alertData);
       
       if (response.success) {
         setAlerts(prev => [...prev, response.data]);
         setError(null);
+        showToast(
+          `Price alert created for ${coinName || 'coin'}!`, 
+          'success'
+        );
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Error creating alert:', err);
-      setError('Failed to create price alert');
+      const errorMessage = `Failed to create price alert for ${coinName || 'coin'}`;
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      return false;
     }
   }, []);
 
-  const toggleAlert = useCallback(async (alertId: string) => {
+  const toggleAlert = useCallback(async (alertId: string, coinName?: string): Promise<boolean> => {
     try {
       const alert = alerts.find(a => a.id === alertId);
-      if (!alert) return;
+      if (!alert) return false;
 
       const response = await watchlistApi.updateAlert(alertId, {
         isActive: !alert.isActive
@@ -179,24 +221,44 @@ export const useWatchlist = (): UseWatchlistReturn => {
           )
         );
         setError(null);
+        
+        const statusText = !alert.isActive ? 'activated' : 'deactivated';
+        showToast(
+          `Alert ${statusText} for ${coinName || 'coin'}`, 
+          'success'
+        );
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Error toggling alert:', err);
-      setError('Failed to update alert');
+      const errorMessage = `Failed to update alert for ${coinName || 'coin'}`;
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      return false;
     }
   }, [alerts]);
 
-  const deleteAlert = useCallback(async (alertId: string) => {
+  const deleteAlert = useCallback(async (alertId: string, coinName?: string): Promise<boolean> => {
     try {
       const response = await watchlistApi.deleteAlert(alertId);
       
       if (response.success) {
         setAlerts(prev => prev.filter(a => a.id !== alertId));
         setError(null);
+        showToast(
+          `Alert deleted for ${coinName || 'coin'}`, 
+          'success'
+        );
+        return true;
       }
+      return false;
     } catch (err) {
       console.error('Error deleting alert:', err);
-      setError('Failed to delete alert');
+      const errorMessage = `Failed to delete alert for ${coinName || 'coin'}`;
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      return false;
     }
   }, []);
 
@@ -222,10 +284,14 @@ export const useWatchlist = (): UseWatchlistReturn => {
       // Refresh coins data
       const coins = await getCoinsForWatchlist();
       setAllCoins(coins);
+      
+      showToast('Watchlist refreshed successfully!', 'success');
 
     } catch (err) {
       console.error('Error refreshing data:', err);
-      setError('Failed to refresh data');
+      const errorMessage = 'Failed to refresh data';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setRefreshing(false);
     }
@@ -265,7 +331,7 @@ export const useWatchlist = (): UseWatchlistReturn => {
     searchQuery,
     setSearchQuery,
     
-    // Actions
+    // Actions with toast support
     addToWatchlist,
     removeFromWatchlist,
     createAlert,

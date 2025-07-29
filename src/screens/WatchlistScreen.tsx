@@ -1,4 +1,4 @@
-// screens/WatchlistScreen.tsx - Fixed integration keeping original working structure
+// screens/WatchlistScreen.tsx - Improved with toast and better alert management
 
 import React, { useState } from 'react';
 import {
@@ -15,11 +15,15 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Button, Card, PriceChangeIndicator, Icon, LoadingSpinner } from '../components/ui';
+import { Toast, useToast } from '../components/ui/Toast';
 import { useWatchlist } from '../hooks/useWatchlist';
 import { CoinPost, PriceAlert } from '../types/api';
 
 export const WatchlistScreen: React.FC = () => {
-  // API integration
+  // Toast system
+  const { toast, showSuccess, showError, showWarning, showInfo, hideToast } = useToast();
+
+  // API integration with toast support
   const {
     watchlistCoins,
     availableCoins,
@@ -36,7 +40,23 @@ export const WatchlistScreen: React.FC = () => {
     toggleAlert,
     deleteAlert,
     refreshData,
-  } = useWatchlist();
+  } = useWatchlist((message, type) => {
+    // Pass toast function to the hook
+    switch (type) {
+      case 'success':
+        showSuccess(message);
+        break;
+      case 'error':
+        showError(message);
+        break;
+      case 'warning':
+        showWarning(message);
+        break;
+      case 'info':
+        showInfo(message);
+        break;
+    }
+  });
 
   // Local UI state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -47,29 +67,24 @@ export const WatchlistScreen: React.FC = () => {
   const [alertType, setAlertType] = useState<'above' | 'below'>('above');
   const [alertPrice, setAlertPrice] = useState('');
 
-  // Error handling
-  React.useEffect(() => {
-    if (error) {
-      Alert.alert('Error', error);
+  const handleAddToWatchlist = async (coin: CoinPost) => {
+    const success = await addToWatchlist(coin.id, coin.name);
+    if (success) {
+      setShowAddModal(false);
+      setSearchQuery('');
     }
-  }, [error]);
-
-  const handleAddToWatchlist = async (coinId: string) => {
-    await addToWatchlist(coinId);
-    setShowAddModal(false);
-    setSearchQuery('');
   };
 
-  const handleRemoveFromWatchlist = (coinId: string) => {
+  const handleRemoveFromWatchlist = (coin: CoinPost) => {
     Alert.alert(
       'Remove from Watchlist',
-      'Are you sure you want to remove this coin from your watchlist?',
+      `Are you sure you want to remove ${coin.name} from your watchlist?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Remove', 
           style: 'destructive',
-          onPress: () => removeFromWatchlist(coinId)
+          onPress: () => removeFromWatchlist(coin.id, coin.name)
         },
       ]
     );
@@ -84,24 +99,64 @@ export const WatchlistScreen: React.FC = () => {
   const handleCreateAlert = async () => {
     if (!selectedCoin || !alertPrice) return;
 
-    await createAlert({
+    const success = await createAlert({
       coinPostId: selectedCoin.id,
       type: alertType,
       targetPrice: `$${alertPrice}`,
       currentPrice: selectedCoin.price,
       isActive: true,
-    });
+    }, selectedCoin.name);
 
-    setShowAlertModal(false);
-    setSelectedCoin(null);
-    setAlertPrice('');
+    if (success) {
+      setShowAlertModal(false);
+      setSelectedCoin(null);
+      setAlertPrice('');
+    }
   };
 
-  // Watchlist Item Component (matching your original working structure)
+  // Improved alert toggle with confirmation
+  const handleToggleAlert = (alert: PriceAlert) => {
+    const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
+    const coinName = coin?.name || 'coin';
+    const action = alert.isActive ? 'deactivate' : 'activate';
+    
+    Alert.alert(
+      `${action.charAt(0).toUpperCase() + action.slice(1)} Alert`,
+      `Do you want to ${action} the price alert for ${coinName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: action.charAt(0).toUpperCase() + action.slice(1), 
+          onPress: () => toggleAlert(alert.id, coinName)
+        },
+      ]
+    );
+  };
+
+  // Improved alert deletion with confirmation
+  const handleDeleteAlert = (alert: PriceAlert) => {
+    const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
+    const coinName = coin?.name || 'coin';
+    
+    Alert.alert(
+      'Delete Alert',
+      `Are you sure you want to permanently delete this price alert for ${coinName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => deleteAlert(alert.id, coinName)
+        },
+      ]
+    );
+  };
+
+  // Watchlist Item Component
   const WatchlistItemComponent: React.FC<{ 
     item: typeof watchlistCoins[0]; 
     onOpenAlert: (coin: CoinPost) => void;
-    onRemoveFromWatchlist: (coinId: string) => void;
+    onRemoveFromWatchlist: (coin: CoinPost) => void;
   }> = ({ item, onOpenAlert, onRemoveFromWatchlist }) => {
     
     const handleAlertPress = () => {
@@ -109,7 +164,7 @@ export const WatchlistScreen: React.FC = () => {
     };
 
     const handleRemovePress = () => {
-      onRemoveFromWatchlist(item.id);
+      onRemoveFromWatchlist(item);
     };
 
     // Render alert indicator if there are alerts
@@ -221,7 +276,7 @@ export const WatchlistScreen: React.FC = () => {
   };
 
   const renderAvailableCoin = ({ item }: { item: CoinPost }) => (
-    <TouchableOpacity onPress={() => handleAddToWatchlist(item.id)}>
+    <TouchableOpacity onPress={() => handleAddToWatchlist(item)}>
       <Card variant="surface" className="mb-2">
         <View className="flex-row items-center">
           <View className="w-10 h-10 bg-hawk-accent rounded-full items-center justify-center mr-3">
@@ -255,43 +310,73 @@ export const WatchlistScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
+  // Improved alert rendering with better visual distinction
   const renderActiveAlert = (alert: PriceAlert) => {
     const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
     if (!coin) return null;
 
     return (
-      <Card key={alert.id} variant="surface" className="mb-2">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text className="text-dark-text-primary font-medium">
-              {coin.name} {alert.type === 'above' ? '↗' : '↘'} {alert.targetPrice}
-            </Text>
-            <Text className="text-dark-text-secondary text-sm">
-              Current: {alert.currentPrice}
-            </Text>
+      <Card key={alert.id} variant="surface" className="mb-3">
+        <View className="p-1">
+          <View className="flex-row items-start justify-between mb-3">
+            <View className="flex-1 mr-3">
+              <Text className="text-dark-text-primary font-medium text-base mb-1">
+                {coin.name} {alert.type === 'above' ? '↗' : '↘'} {alert.targetPrice}
+              </Text>
+              <Text className="text-dark-text-secondary text-sm">
+                Current: {alert.currentPrice}
+              </Text>
+              <View className="flex-row items-center mt-1">
+                <View className={`w-2 h-2 rounded-full mr-2 ${
+                  alert.isActive ? 'bg-green-500' : 'bg-gray-400'
+                }`} />
+                <Text className={`text-xs font-medium ${
+                  alert.isActive ? 'text-green-500' : 'text-gray-400'
+                }`}>
+                  {alert.isActive ? 'Active' : 'Inactive'}
+                </Text>
+              </View>
+            </View>
           </View>
           
-          <View className="flex-row items-center gap-x-2">
+          {/* Improved action buttons with better separation */}
+          <View className="flex-row justify-between items-center pt-3 border-t border-dark-border">
+            {/* Toggle Button - More prominent */}
             <TouchableOpacity
-              onPress={() => toggleAlert(alert.id)}
-              className={`px-3 py-1 rounded-lg ${
+              onPress={() => handleToggleAlert(alert)}
+              className={`flex-1 mr-2 py-3 px-4 rounded-xl border ${
                 alert.isActive 
-                  ? 'bg-hawk-accent bg-opacity-20' 
-                  : 'bg-dark-border'
+                  ? 'border-green-500 bg-green-500 bg-opacity-10' 
+                  : 'border-gray-400 bg-gray-400 bg-opacity-10'
               }`}
+              activeOpacity={0.7}
             >
-              <Text className={`text-xs font-bold ${
-                alert.isActive ? 'text-dark-text-primary' : 'text-dark-text-muted'
-              }`}>
-                {alert.isActive ? 'ON' : 'OFF'}
-              </Text>
+              <View className="flex-row items-center justify-center">
+                <Icon 
+                  name={alert.isActive ? "⏸" : "▶"} 
+                  size={14} 
+                  color={alert.isActive ? "#10b981" : "#6b7280"} 
+                />
+                <Text className={`ml-2 text-sm font-semibold ${
+                  alert.isActive ? 'text-green-500' : 'text-gray-400'
+                }`}>
+                  {alert.isActive ? 'Pause' : 'Resume'}
+                </Text>
+              </View>
             </TouchableOpacity>
             
+            {/* Delete Button - Clearly separated and styled as destructive */}
             <TouchableOpacity
-              onPress={() => deleteAlert(alert.id)}
-              className="p-1"
+              onPress={() => handleDeleteAlert(alert)}
+              className="px-4 py-3 rounded-xl border border-red-500 bg-red-500 bg-opacity-10"
+              activeOpacity={0.7}
             >
-              <Icon name="🗑" size={14} color="#ef4444" />
+              <View className="flex-row items-center">
+                <Icon name="🗑" size={14} color="#ef4444" />
+                <Text className="ml-2 text-sm font-semibold text-red-500">
+                  Delete
+                </Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -303,14 +388,22 @@ export const WatchlistScreen: React.FC = () => {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-dark-bg">
-        <LoadingSpinner variant="overlay" text="Loading watchlist..." />
+        <LoadingSpinner variant="overlay" text="Loading watchlist..." />     
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
-      {/* Header - matching your original structure */}
+      {/* Toast Notification */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
+
+      {/* Header */}
       <View className="px-4 py-8 mt-4 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-xl font-bold text-dark-text-primary">👀 Watchlist</Text>
@@ -355,7 +448,7 @@ export const WatchlistScreen: React.FC = () => {
 
       <ScrollView
         className="flex-1 px-4"
-        contentContainerStyle={{ paddingBottom: 112 }} // 64 (tab height) + extra space
+        contentContainerStyle={{ paddingBottom: 112 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -392,13 +485,13 @@ export const WatchlistScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Active Alerts Section */}
-        {alerts.filter(a => a.isActive).length > 0 && (
+        {/* Improved Active Alerts Section */}
+        {alerts.length > 0 && (
           <View className="py-4">
             <Text className="text-dark-text-primary font-semibold text-lg mb-3">
-              🔔 Active Alerts
+              🔔 Price Alerts ({alerts.filter(a => a.isActive).length} active, {alerts.length} total)
             </Text>
-            {alerts.filter(a => a.isActive).map(renderActiveAlert)}
+            {alerts.map(renderActiveAlert)}
           </View>
         )}
       </ScrollView>
@@ -434,8 +527,7 @@ export const WatchlistScreen: React.FC = () => {
             </View>
           </View>
 
-          <ScrollView className="flex-1 px-4 py-4" contentContainerStyle={{ paddingBottom: 100 }}>
-
+          <ScrollView className="flex-1 px-4 py-4">
             <FlatList
               data={availableCoins}
               renderItem={renderAvailableCoin}
