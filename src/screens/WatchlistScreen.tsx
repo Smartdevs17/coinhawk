@@ -358,7 +358,7 @@ export const WatchlistScreen: React.FC = () => {
                   color={alert.isActive ? "#10b981" : "#6b7280"} 
                 />
                 <Text className={`ml-2 text-sm font-semibold ${
-                  alert.isActive ? 'text-green-500' : 'text-gray-400'
+                  alert.isActive ? 'text-green-dark-500' : 'text-gray-dark-400'
                 }`}>
                   {alert.isActive ? 'Pause' : 'Resume'}
                 </Text>
@@ -373,7 +373,7 @@ export const WatchlistScreen: React.FC = () => {
             >
               <View className="flex-row items-center">
                 <Icon name="🗑" size={14} color="#ef4444" />
-                <Text className="ml-2 text-sm font-semibold text-red-500">
+                <Text className="ml-2 text-sm font-semibold text-red-dark-500">
                   Delete
                 </Text>
               </View>

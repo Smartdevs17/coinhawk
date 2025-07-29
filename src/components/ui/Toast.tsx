@@ -130,7 +130,7 @@ export const Toast: React.FC<ToastProps> = ({
           transform: [{ translateY: slideAnim }],
           opacity: opacityAnim,
           marginHorizontal: 16,
-          marginTop: 8,
+          marginTop: 40, // Increased from 8 to 40 for better spacing from the top
         }}
       >
         <View
