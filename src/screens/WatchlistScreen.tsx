@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+// screens/WatchlistScreen.tsx - Fixed integration keeping original working structure
+
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,78 +11,56 @@ import {
   TextInput,
   Alert,
   Modal,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import { CoinPost } from '../types';
 import { Button, Card, PriceChangeIndicator, Icon, LoadingSpinner } from '../components/ui';
-import { EXTENDED_TRENDING_POSTS, MOCK_WATCHLIST_IDS, MOCK_PRICE_ALERTS } from '../utils/mockData';
-
-// Watchlist specific types
-interface PriceAlert {
-  id: string;
-  coinPostId: string;
-  type: 'above' | 'below';
-  targetPrice: string;
-  currentPrice: string;
-  isActive: boolean;
-}
-
-interface WatchlistItem extends CoinPost {
-  alertsCount?: number;
-  isAlertsActive?: boolean;
-}
+import { useWatchlist } from '../hooks/useWatchlist';
+import { CoinPost, PriceAlert } from '../types/api';
 
 export const WatchlistScreen: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  // API integration
+  const {
+    watchlistCoins,
+    availableCoins,
+    alerts,
+    loading,
+    refreshing,
+    searchLoading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    addToWatchlist,
+    removeFromWatchlist,
+    createAlert,
+    toggleAlert,
+    deleteAlert,
+    refreshData,
+  } = useWatchlist();
+
+  // Local UI state
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [selectedCoin, setSelectedCoin] = useState<CoinPost | null>(null);
-  const [watchlistIds, setWatchlistIds] = useState<string[]>(MOCK_WATCHLIST_IDS);
-  const [alerts, setAlerts] = useState<PriceAlert[]>(MOCK_PRICE_ALERTS);
   
   // Alert form state
   const [alertType, setAlertType] = useState<'above' | 'below'>('above');
   const [alertPrice, setAlertPrice] = useState('');
 
-  // Get watchlisted coins
-  const watchlistCoins: WatchlistItem[] = useMemo(() => {
-    return EXTENDED_TRENDING_POSTS
-      .filter(coin => watchlistIds.includes(coin.id))
-      .map(coin => {
-        const coinAlerts = alerts.filter(alert => alert.coinPostId === coin.id);
-        return {
-          ...coin,
-          alertsCount: coinAlerts.length,
-          isAlertsActive: coinAlerts.some(alert => alert.isActive),
-        };
-      });
-  }, [watchlistIds, alerts]);
+  // Error handling
+  React.useEffect(() => {
+    if (error) {
+      Alert.alert('Error', error);
+    }
+  }, [error]);
 
-  // Available coins to add (not in watchlist)
-  const availableCoins = useMemo(() => {
-    return EXTENDED_TRENDING_POSTS
-      .filter(coin => !watchlistIds.includes(coin.id))
-      .filter(coin => 
-        searchQuery === '' || 
-        coin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        coin.symbol.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-  }, [watchlistIds, searchQuery]);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => setRefreshing(false), 1500);
-  };
-
-  const addToWatchlist = (coinId: string) => {
-    setWatchlistIds(prev => [...prev, coinId]);
+  const handleAddToWatchlist = async (coinId: string) => {
+    await addToWatchlist(coinId);
     setShowAddModal(false);
     setSearchQuery('');
   };
 
-  const removeFromWatchlist = (coinId: string) => {
+  const handleRemoveFromWatchlist = (coinId: string) => {
     Alert.alert(
       'Remove from Watchlist',
       'Are you sure you want to remove this coin from your watchlist?',
@@ -89,10 +69,7 @@ export const WatchlistScreen: React.FC = () => {
         { 
           text: 'Remove', 
           style: 'destructive',
-          onPress: () => {
-            setWatchlistIds(prev => prev.filter(id => id !== coinId));
-            setAlerts(prev => prev.filter(alert => alert.coinPostId !== coinId));
-          }
+          onPress: () => removeFromWatchlist(coinId)
         },
       ]
     );
@@ -104,41 +81,25 @@ export const WatchlistScreen: React.FC = () => {
     setShowAlertModal(true);
   };
 
-  const createPriceAlert = () => {
+  const handleCreateAlert = async () => {
     if (!selectedCoin || !alertPrice) return;
 
-    const newAlert: PriceAlert = {
-      id: Date.now().toString(),
+    await createAlert({
       coinPostId: selectedCoin.id,
       type: alertType,
       targetPrice: `$${alertPrice}`,
       currentPrice: selectedCoin.price,
       isActive: true,
-    };
+    });
 
-    setAlerts(prev => [...prev, newAlert]);
     setShowAlertModal(false);
     setSelectedCoin(null);
     setAlertPrice('');
   };
 
-  const toggleAlert = (alertId: string) => {
-    setAlerts(prev => 
-      prev.map(alert => 
-        alert.id === alertId 
-          ? { ...alert, isActive: !alert.isActive }
-          : alert
-      )
-    );
-  };
-
-  const deleteAlert = (alertId: string) => {
-    setAlerts(prev => prev.filter(alert => alert.id !== alertId));
-  };
-
-  // Completely rewritten WatchlistItem component with no whitespace issues
+  // Watchlist Item Component (matching your original working structure)
   const WatchlistItemComponent: React.FC<{ 
-    item: WatchlistItem; 
+    item: typeof watchlistCoins[0]; 
     onOpenAlert: (coin: CoinPost) => void;
     onRemoveFromWatchlist: (coinId: string) => void;
   }> = ({ item, onOpenAlert, onRemoveFromWatchlist }) => {
@@ -208,7 +169,7 @@ export const WatchlistScreen: React.FC = () => {
               </Text>
               <View className="flex-row items-center">
                 <Text className="text-dark-text-muted text-xs">
-                  {item.holders.toLocaleString()} holders
+                  {item.holders?.toLocaleString() || '0'} holders
                 </Text>
                 {renderAlertIndicator()}
               </View>
@@ -230,7 +191,7 @@ export const WatchlistScreen: React.FC = () => {
               >
                 <Icon name="🔔" size={16} color="#fbbf24" />
               </TouchableOpacity>
-                <TouchableOpacity
+              <TouchableOpacity
                 onPress={handleRemovePress}
                 className="rounded-lg p-2"
                 style={{
@@ -239,9 +200,9 @@ export const WatchlistScreen: React.FC = () => {
                   borderColor: '#ef4444',
                 }}
                 activeOpacity={0.7}
-                >
+              >
                 <Icon name="✕" size={16} color="#ef4444" />
-                </TouchableOpacity>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -249,18 +210,18 @@ export const WatchlistScreen: React.FC = () => {
     );
   };
 
-  const renderWatchlistItem = ({ item }: { item: WatchlistItem }) => {
+  const renderWatchlistItem = ({ item }: { item: typeof watchlistCoins[0] }) => {
     return (
       <WatchlistItemComponent 
         item={item}
         onOpenAlert={openAlertModal}
-        onRemoveFromWatchlist={removeFromWatchlist}
+        onRemoveFromWatchlist={handleRemoveFromWatchlist}
       />
     );
   };
 
   const renderAvailableCoin = ({ item }: { item: CoinPost }) => (
-    <TouchableOpacity onPress={() => addToWatchlist(item.id)}>
+    <TouchableOpacity onPress={() => handleAddToWatchlist(item.id)}>
       <Card variant="surface" className="mb-2">
         <View className="flex-row items-center">
           <View className="w-10 h-10 bg-hawk-accent rounded-full items-center justify-center mr-3">
@@ -295,7 +256,7 @@ export const WatchlistScreen: React.FC = () => {
   );
 
   const renderActiveAlert = (alert: PriceAlert) => {
-    const coin = EXTENDED_TRENDING_POSTS.find(c => c.id === alert.coinPostId);
+    const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
     if (!coin) return null;
 
     return (
@@ -319,11 +280,11 @@ export const WatchlistScreen: React.FC = () => {
                   : 'bg-dark-border'
               }`}
             >
-                <Text className={`text-xs font-bold ${
+              <Text className={`text-xs font-bold ${
                 alert.isActive ? 'text-dark-text-primary' : 'text-dark-text-muted'
-                }`}>
+              }`}>
                 {alert.isActive ? 'ON' : 'OFF'}
-                </Text>
+              </Text>
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -338,9 +299,18 @@ export const WatchlistScreen: React.FC = () => {
     );
   };
 
+  // Loading screen
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-dark-bg">
+        <LoadingSpinner variant="overlay" text="Loading watchlist..." />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
-      {/* Header */}
+      {/* Header - matching your original structure */}
       <View className="px-4 py-8 mt-4 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-xl font-bold text-dark-text-primary">👀 Watchlist</Text>
@@ -348,7 +318,7 @@ export const WatchlistScreen: React.FC = () => {
             <TouchableOpacity onPress={() => setShowAddModal(true)}>
               <Icon name="+" size={20} color="#fbbf24" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleRefresh}>
+            <TouchableOpacity onPress={refreshData}>
               <Icon name="🔄" size={20} color="#fbbf24" />
             </TouchableOpacity>
           </View>
@@ -386,6 +356,13 @@ export const WatchlistScreen: React.FC = () => {
       <ScrollView
         className="flex-1 px-4"
         contentContainerStyle={{ paddingBottom: 112 }} // 64 (tab height) + extra space
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refreshData}
+            tintColor="#fbbf24"
+          />
+        }
       >
         {/* Watchlist Items */}
         {watchlistCoins.length > 0 ? (
@@ -451,15 +428,27 @@ export const WatchlistScreen: React.FC = () => {
                 onChangeText={setSearchQuery}
                 className="flex-1 ml-3 text-dark-text-primary"
               />
+              {searchLoading && (
+                <ActivityIndicator size="small" color="#fbbf24" />
+              )}
             </View>
           </View>
 
-          <ScrollView className="flex-1 px-4 py-4">
+          <ScrollView className="flex-1 px-4 py-4" contentContainerStyle={{ paddingBottom: 100 }}>
+
             <FlatList
               data={availableCoins}
               renderItem={renderAvailableCoin}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
+              ListEmptyComponent={
+                <View className="items-center justify-center py-16">
+                  <Icon name="🔍" size={48} color="#64748b" />
+                  <Text className="text-dark-text-secondary text-lg font-medium mt-4">
+                    {searchQuery ? 'No coins found' : 'Loading coins...'}
+                  </Text>
+                </View>
+              }
             />
           </ScrollView>
         </SafeAreaView>
@@ -554,7 +543,7 @@ export const WatchlistScreen: React.FC = () => {
               <Button
                 title="Create Alert"
                 variant="primary"
-                onPress={createPriceAlert}
+                onPress={handleCreateAlert}
                 className="flex-1"
                 disabled={!alertPrice}
               />
