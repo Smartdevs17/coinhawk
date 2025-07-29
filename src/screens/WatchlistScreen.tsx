@@ -341,7 +341,7 @@ export const WatchlistScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
       {/* Header */}
-      <View className="px-4 py-8 bg-dark-surface border-b border-dark-border">
+      <View className="px-4 py-8 mt-4 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-xl font-bold text-dark-text-primary">👀 Watchlist</Text>
           <View className="flex-row gap-x-3">
@@ -499,7 +499,7 @@ export const WatchlistScreen: React.FC = () => {
                 }`}
               >
                 <Text className={`text-center font-medium ${
-                  alertType === 'above' ? 'text-hawk-accent' : 'text-dark-text-secondary'
+                  alertType === 'above' ? 'text-dark-hawk-accent' : 'text-dark-text-secondary'
                 }`}>
                   Price Above
                 </Text>
@@ -513,7 +513,7 @@ export const WatchlistScreen: React.FC = () => {
                 }`}
               >
                 <Text className={`text-center font-medium ${
-                  alertType === 'below' ? 'text-hawk-accent' : 'text-dark-text-secondary'
+                  alertType === 'below' ? 'text-dark-hawk-accent' : 'text-dark-text-secondary'
                 }`}>
                   Price Below
                 </Text>

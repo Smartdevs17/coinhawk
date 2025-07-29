@@ -59,20 +59,22 @@ export const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">      
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-8 bg-dark-surface border-b border-dark-border">
+      <View className="flex-row items-center justify-between px-4 py-8 mt-4 mb-1 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center">
           <Icon name="🦅" size={24} />
           <Text className="text-xl font-bold text-dark-text-primary ml-2">CoinHawk</Text>
         </View>
-        <View className="flex-row space-x-3">
-          <TouchableOpacity>
-            <Icon name="🔔" size={20} color="#cbd5e1" />
+        <View className="flex-row">
+          <TouchableOpacity className="mr-3">
+        <Icon name="🔔" size={20} color="#cbd5e1" />
           </TouchableOpacity>
           <TouchableOpacity>
-            <Icon name="👤" size={20} color="#cbd5e1" />
+        <Icon name="👤" size={20} color="#cbd5e1" />
           </TouchableOpacity>
         </View>
       </View>
+   
+      
 
       <ScrollView
         className="flex-1"
@@ -137,25 +139,6 @@ export const HomeScreen: React.FC = () => {
             scrollEnabled={false}
             showsVerticalScrollIndicator={false}
           />
-        </View>
-
-        {/* Quick Actions */}
-        <View className="px-4 py-6">
-          <Text className="text-lg font-semibold text-dark-text-primary mb-3">Quick Actions</Text>
-          <View className="flex-row gap-x-3">
-            <TouchableOpacity className="flex-1 bg-hawk-accent rounded-xl p-4 items-center">
-              <Icon name="📈" size={24} color="#1a1f36" />
-              <Text className="text-hawk-primary font-semibold mt-2">Trade</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 bg-dark-surface border border-dark-border rounded-xl p-4 items-center">
-              <Icon name="👀" size={24} color="#fbbf24" />
-              <Text className="text-dark-text-primary font-semibold mt-2">Watchlist</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className="flex-1 bg-dark-surface border border-dark-border rounded-xl p-4 items-center">
-              <Icon name="📊" size={24} color="#fbbf24" />
-              <Text className="text-dark-text-primary font-semibold mt-2">Analytics</Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Bottom Spacing */}

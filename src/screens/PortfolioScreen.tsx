@@ -210,7 +210,7 @@ export const PortfolioScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
       {/* Header */}
-      <View className="px-4 py-8 bg-dark-surface border-b border-dark-border">
+      <View className="px-4 py-8 mt-4 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center justify-between">
           <Text className="text-xl font-bold text-dark-text-primary">💼 Portfolio</Text>
           <TouchableOpacity onPress={handleRefresh}>
@@ -319,40 +319,6 @@ export const PortfolioScreen: React.FC = () => {
               showsVerticalScrollIndicator={false}
             />
           </Card>
-        </View>
-
-        {/* Quick Actions */}
-        <View className="px-4 pb-6">
-          <Text className="text-dark-text-primary font-semibold mb-3">Quick Actions</Text>
-          <View className="flex-row gap-x-3">
-            <Button
-              title="Buy More"
-              variant="primary"
-              icon={<Icon name="💰" size={16} color="#1a1f36" />}
-              className="flex-1"
-            />
-            <Button
-              title="Sell All"
-              variant="danger"
-              icon={<Icon name="📤" size={16} color="white" />}
-              className="flex-1"
-            />
-          </View>
-          
-          <View className="flex-row gap-x-3 mt-3">
-            <Button
-              title="Add to Watchlist"
-              variant="secondary"
-              icon={<Icon name="👀" size={16} color="#fbbf24" />}
-              className="flex-1"
-            />
-            <Button
-              title="Export Data"
-              variant="secondary"
-              icon={<Icon name="📊" size={16} color="#fbbf24" />}
-              className="flex-1"
-            />
-          </View>
         </View>
 
         {/* Loading Overlay */}

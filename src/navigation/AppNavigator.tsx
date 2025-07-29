@@ -30,7 +30,7 @@ const TabNavigator: React.FC = () => {
           paddingTop: 8,
           height: 64 + Math.max(insets.bottom, 8), // Adjust height based on safe area
           position: 'absolute',
-          bottom: 0,
+          bottom: 10,
           left: 0,
           right: 0,
         },

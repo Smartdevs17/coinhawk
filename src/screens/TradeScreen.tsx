@@ -151,7 +151,7 @@ export const TradeScreen: React.FC = () => {
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
       {/* Header */}
-      <View className="px-4 py-8 bg-dark-surface border-b border-dark-border">
+      <View className="px-4 py-8 mt-4 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center justify-between">
           <Text className="text-xl font-bold text-dark-text-primary">📈 Trade</Text>
           <TouchableOpacity onPress={() => setShowCoinSelector(true)}>
