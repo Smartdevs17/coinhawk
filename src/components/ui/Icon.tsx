@@ -14,6 +14,12 @@ export const Icon: React.FC<IconProps> = ({
   style,
   ...props 
 }) => {
+  // Ensure name is a string and not empty
+  if (typeof name !== 'string' || !name) {
+    console.warn('Icon component received invalid name prop:', name);
+    return null; // Prevent rendering invalid content
+  }
+
   return (
     <Text 
       style={[
