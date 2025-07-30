@@ -56,10 +56,10 @@ const MOCK_HOLDINGS: Holdings[] = [
 
 // Mock coin data for holdings display
 const HOLDINGS_COINS: Record<string, CoinPost> = {
-  '1': { id: '1', name: 'BaseGold', symbol: 'BGLD', price: '$0.1234', change24h: '+12.4%', marketCap: '$15.0M', volume24h: '$1.3M', holders: 8934, verified: true },
-  '3': { id: '3', name: 'CoinHawk Token', symbol: 'HAWK', price: '$1.2567', change24h: '+8.9%', marketCap: '$25.0M', volume24h: '$2.1M', holders: 15234, verified: true },
-  '4': { id: '4', name: 'BasePepe', symbol: 'BPEPE', price: '$0.0123', change24h: '+45.7%', marketCap: '$8.2M', volume24h: '$3.1M', holders: 18902, verified: true },
-  '7': { id: '7', name: 'BasedArt', symbol: 'BART', price: '$0.3456', change24h: '+23.1%', marketCap: '$12.8M', volume24h: '$1.7M', holders: 11234, verified: true },
+  '1': { id: '1', name: 'BaseGold', symbol: 'BGLD', price: '$0.1234', change24h: '+12.4%', marketCap: '$15.0M', volume24h: '$1.3M', holders: 8934, verified: true, address: '0xbasegold' },
+  '3': { id: '3', name: 'CoinHawk Token', symbol: 'HAWK', price: '$1.2567', change24h: '+8.9%', marketCap: '$25.0M', volume24h: '$2.1M', holders: 15234, verified: true, address: '0xcoinhawktoken' },
+  '4': { id: '4', name: 'BasePepe', symbol: 'BPEPE', price: '$0.0123', change24h: '+45.7%', marketCap: '$8.2M', volume24h: '$3.1M', holders: 18902, verified: true, address: '0xbasepepe' },
+  '7': { id: '7', name: 'BasedArt', symbol: 'BART', price: '$0.3456', change24h: '+23.1%', marketCap: '$12.8M', volume24h: '$1.7M', holders: 11234, verified: true, address: '0xbasedart' },
 };
 
 // Mock recent transactions

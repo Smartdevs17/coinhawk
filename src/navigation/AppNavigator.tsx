@@ -1,4 +1,5 @@
 import React from 'react';
+import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,9 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 // Import screens
 import { HomeScreen } from '../screens/HomeScreen';
 import { TrendingScreen } from '../screens/TrendingScreen';
-import { PortfolioScreen } from '../screens/PortfolioScreen';
+// import { PortfolioScreen } from '../screens/PortfolioScreen';
 import { WatchlistScreen } from '../screens/WatchlistScreen';
-import { TradeScreen } from '../screens/TradeScreen';
+// import { TradeScreen } from '../screens/TradeScreen';
 import { CoinDetailsScreen } from '../screens/CoinDetailsScreen';
 
 // Import UI components
@@ -34,6 +35,17 @@ export type TabParamList = {
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
+// Placeholder screen for Trade (still in development)
+const PlaceholderScreen = ({ title }: { title: string }) => (
+  <View className="flex-1 bg-dark-bg items-center justify-center">
+    <Icon name="🚧" size={48} color="#fbbf24" />
+    <Text className="text-dark-text-primary text-xl font-semibold mt-4">{title}</Text>
+    <Text className="text-dark-text-secondary text-center mt-2">Coming Soon</Text>
+  </View>
+);
+const PortfolioScreen = () => <PlaceholderScreen title="Portfolio" />;
+const TradeScreen = () => <PlaceholderScreen title="Trade" />;
+
 
 const TabNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();

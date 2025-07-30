@@ -85,7 +85,15 @@ export const HomeScreen: React.FC = () => {
   const renderCoinItem = ({ item, index }: { item: CoinPost; index: number }) => {
     // Defensive checks to prevent undefined values
     if (!item) return null;
-    
+
+    // Sanitize name and symbol for display
+    const displayName = typeof item.name === 'string'
+      ? item.name.replace(/\n/g, ' ').trim()
+      : 'Unknown';
+    const displaySymbol = typeof item.symbol === 'string'
+      ? item.symbol.replace(/\n/g, ' ').trim()
+      : '---';
+
     return (
       <TouchableOpacity 
         onPress={() => handleCoinPress(item)}
@@ -101,14 +109,14 @@ export const HomeScreen: React.FC = () => {
             <View className="flex-1">
               <View className="flex-row items-center">
                 <Text className="text-dark-text-primary font-semibold text-lg mr-2">
-                  {item.name || 'Unknown'}
+                  {displayName}
                 </Text>
                 {item.verified && (
                   <Icon name="✓" size={16} color="#10b981" />
                 )}
               </View>
               <Text className="text-dark-text-secondary">
-                {item.symbol || '---'}
+                {displaySymbol}
               </Text>
               {item.holders && (
                 <Text className="text-dark-text-muted text-xs mt-1">
@@ -128,7 +136,6 @@ export const HomeScreen: React.FC = () => {
             </Text>
           </View>
         </View>
-        
         <View className="mt-3 pt-3 border-t border-dark-border">
           <View className="flex-row justify-between">
             <Text className="text-dark-text-muted text-sm">
@@ -233,22 +240,7 @@ export const HomeScreen: React.FC = () => {
 
         {/* Category Section */}
         <View className="px-4">
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-lg font-semibold text-dark-text-primary">
-              {CATEGORIES.find(cat => cat.key === selectedCategory)?.icon || '📊'}{' '}
-              {CATEGORIES.find(cat => cat.key === selectedCategory)?.label || 'Unknown'}
-            </Text>
-            <TouchableOpacity 
-              onPress={() => {
-                // For now, just log since we're within the same tab navigator
-                console.log('Navigate to full category:', selectedCategory);
-                // In a real app, you might want to navigate to a dedicated category screen
-                // or pass the category filter to the trending screen
-              }}
-            >
-              <Text className="text-hawk-accent text-sm font-medium">View all →</Text>
-            </TouchableOpacity>
-          </View>
+        
           
           {/* Loading State */}
           {loading && (

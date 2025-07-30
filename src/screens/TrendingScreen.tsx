@@ -1,4 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 import {
   View,
   Text,
@@ -16,6 +19,7 @@ type FilterType = 'All' | 'Gainers' | 'New';
 type SortType = 'Market Cap' | 'Volume' | 'Price' | '24h Change';
 
 export const TrendingScreen: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [activeFilter, setActiveFilter] = useState<FilterType>('All');
   const [selectedSort, setSelectedSort] = useState<SortType>('Market Cap');
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,7 +87,7 @@ export const TrendingScreen: React.FC = () => {
   );
 
   const renderCoinPost = ({ item, index }: { item: CoinPost; index: number }) => (
-    <TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('CoinDetails', { coin: item })}>
       <Card variant="surface" className="mb-3">
         <View className="flex-row items-center">
           {/* Rank and Icon */}
@@ -195,7 +199,7 @@ export const TrendingScreen: React.FC = () => {
       </View>
 
       {/* Filter Tabs */}
-      <View className="px-4 py-3">
+      {/* <View className="px-4 py-3">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-x-2">
             {filters.map((filter) => (
@@ -209,7 +213,7 @@ export const TrendingScreen: React.FC = () => {
             ))}
           </View>
         </ScrollView>
-      </View>
+      </View> */}
 
       {/* Sort Controls */}
       <View className="px-4 pb-3">
@@ -264,7 +268,7 @@ export const TrendingScreen: React.FC = () => {
 
       {/* Coins List */}
       <FlatList
-        data={filteredAndSortedPosts}
+        data={filteredAndSortedPosts.filter(post => post.rank === 1 || post.rank === 2 || post.rank === 3 || post.rank === 4 || post.rank === 5)}
         renderItem={renderCoinPost}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
@@ -274,7 +278,7 @@ export const TrendingScreen: React.FC = () => {
             <View className="items-center">
               <Icon name="🔍" size={32} color="#94a3b8" />
               <Text className="text-dark-text-secondary text-center mt-3">
-                No CoinPosts found
+                No trending coins found
               </Text>
               <Text className="text-dark-text-muted text-center text-sm mt-1">
                 Try adjusting your search or filters

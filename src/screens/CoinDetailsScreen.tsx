@@ -11,6 +11,7 @@ import {
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RouteProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CoinPost } from '../types';
 import { Icon, LoadingSpinner, Button, Card } from '../components/ui';
@@ -29,6 +30,7 @@ type CoinDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, '
 type CoinDetailsScreenRouteProp = RouteProp<RootStackParamList, 'CoinDetails'>;
 
 export const CoinDetailsScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<CoinDetailsScreenNavigationProp>();
   const route = useRoute<CoinDetailsScreenRouteProp>();
   
@@ -132,61 +134,70 @@ export const CoinDetailsScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-4 bg-dark-surface border-b border-dark-border">
-        <TouchableOpacity onPress={() => navigation.goBack()} className="flex-row items-center">
+      {/* Header - Add extra top padding */}
+      <View
+        className="flex-row items-center justify-between px-4 py-2 bg-dark-surface border-b border-dark-border"
+        style={{ paddingTop: insets.top + 12 }}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} className="flex-row items-center py-2">
           <Icon name="←" size={20} color="#cbd5e1" />
           <Text className="text-dark-text-secondary ml-2">Back</Text>
         </TouchableOpacity>
-        
         <View className="flex-row items-center">
-          <TouchableOpacity onPress={handleWatchlist} className="mr-4">
+          <TouchableOpacity onPress={handleWatchlist} className="mr-4 p-2">
             <Icon 
               name={isWatchlisted ? "⭐" : "☆"} 
               size={20} 
               color={isWatchlisted ? "#fbbf24" : "#cbd5e1"} 
             />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleShare}>
+          <TouchableOpacity onPress={handleShare} className="p-2">
             <Icon name="📤" size={20} color="#cbd5e1" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Coin Header */}
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + 100, // Add safe area to bottom
+          paddingTop: 8, // Add a little space below header
+        }}
+      >
+        {/* Coin Header - Reduced padding */}
         <View className="p-4 bg-dark-surface border-b border-dark-border">
-          <View className="flex-row items-center mb-4">
-            <View className="w-16 h-16 bg-hawk-accent rounded-full items-center justify-center mr-4">
-              <Text className="text-hawk-primary font-bold text-xl">
+          <View className="flex-row items-center mb-3">
+            <View className="w-12 h-12 bg-hawk-accent rounded-full items-center justify-center mr-3">
+              <Text className="text-hawk-primary font-bold text-lg">
                 {coin.symbol.slice(0, 2)}
               </Text>
             </View>
             <View className="flex-1">
               <View className="flex-row items-center">
-                <Text className="text-dark-text-primary font-bold text-2xl mr-2">
+                <Text className="text-dark-text-primary font-bold text-xl mr-2">
                   {coin.name}
                 </Text>
                 {coin.verified && (
-                  <Icon name="✓" size={20} color="#10b981" />
+                  <Icon name="✓" size={18} color="#10b981" />
                 )}
               </View>
-              <Text className="text-dark-text-secondary text-lg">{coin.symbol}</Text>
+              <Text className="text-dark-text-secondary text-base">{coin.symbol}</Text>
               {coin.holders && (
-                <Text className="text-dark-text-muted">
+                <Text className="text-dark-text-muted text-sm">
                   {coin.holders.toLocaleString()} holders
                 </Text>
               )}
             </View>
           </View>
 
-          {/* Price and Stats */}
+          {/* Price and Stats - More compact */}
           <View className="flex-row items-center justify-between">
             <View>
-              <Text className="text-dark-text-primary font-bold text-3xl">
+              <Text className="text-dark-text-primary font-bold text-2xl">
                 {coin.price}
               </Text>
-              <Text className={`text-lg font-semibold ${
+              <Text className={`text-base font-semibold ${
                 coin.change24h.startsWith('+') ? 'text-success-500' : 'text-danger-500'
               }`}>
                 {coin.change24h} (24h)
@@ -195,128 +206,136 @@ export const CoinDetailsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - More compact */}
         <View className="p-4">
-          <View className="flex-row justify-between mb-4">
-            <Card variant="surface" className="flex-1 mr-2">
-              <Text className="text-dark-text-muted text-sm mb-1">Market Cap</Text>
-              <Text className="text-dark-text-primary font-semibold text-lg">
+          <View className="flex-row justify-between mb-3">
+            <Card variant="surface" className="flex-1 mr-2 p-3">
+              <Text className="text-dark-text-muted text-xs mb-1">Market Cap</Text>
+              <Text className="text-dark-text-primary font-semibold text-base">
                 {coin.marketCap}
               </Text>
             </Card>
-            <Card variant="surface" className="flex-1 ml-2">
-              <Text className="text-dark-text-muted text-sm mb-1">24h Volume</Text>
-              <Text className="text-dark-text-primary font-semibold text-lg">
+            <Card variant="surface" className="flex-1 ml-2 p-3">
+              <Text className="text-dark-text-muted text-xs mb-1">24h Volume</Text>
+              <Text className="text-dark-text-primary font-semibold text-base">
                 {coin.volume24h}
               </Text>
             </Card>
           </View>
         </View>
 
-        {/* Description */}
+        {/* Description - More compact */}
         {coin.description && (
-          <View className="px-4 mb-4">
-            <Text className="text-dark-text-primary font-semibold text-lg mb-2">
+          <View className="px-4 mb-3">
+            <Text className="text-dark-text-primary font-semibold text-base mb-2">
               About {coin.name}
             </Text>
-            <Card variant="surface">
-              <Text className="text-dark-text-secondary leading-6">
+            <Card variant="surface" className="p-3">
+              <Text className="text-dark-text-secondary leading-5 text-sm">
                 {coin.description}
               </Text>
             </Card>
           </View>
         )}
 
-        {/* AI Summary Section */}
-        <View className="px-4 mb-4">
-          <View className="flex-row items-center mb-3">
-            <Icon name="🤖" size={20} color="#fbbf24" />
-            <Text className="text-dark-text-primary font-semibold text-lg ml-2">
+        {/* AI Summary Section - More compact */}
+        <View className="px-4 mb-3">
+          <View className="flex-row items-center mb-2">
+            <Icon name="🤖" size={18} color="#fbbf24" />
+            <Text className="text-dark-text-primary font-semibold text-base ml-2">
               AI Summary
             </Text>
           </View>
           
-          <Card variant="surface">
+          <Card variant="surface" className="p-3">
             {summaryLoading ? (
-              <View className="items-center py-6">
+              <View className="items-center py-4">
                 <LoadingSpinner size="small" />
-                <Text className="text-dark-text-muted mt-2">
+                <Text className="text-dark-text-muted mt-2 text-sm">
                   Generating AI analysis...
                 </Text>
               </View>
             ) : aiSummary ? (
-              <Text className="text-dark-text-secondary leading-6">
+              <Text className="text-dark-text-secondary leading-5 text-sm">
                 {aiSummary}
               </Text>
             ) : (
-              <View className="items-center py-6">
-                <Icon name="🔍" size={32} color="#94a3b8" />
-                <Text className="text-dark-text-muted mt-2 text-center">
+              <View className="items-center py-4">
+                <Icon name="🔍" size={24} color="#94a3b8" />
+                <Text className="text-dark-text-muted mt-2 text-center text-sm">
                   AI summary not available at this time
                 </Text>
                 <TouchableOpacity 
                   onPress={() => coin.address && loadCoinData(coin.address)}
-                  className="mt-3"
+                  className="mt-2"
                 >
-                  <Text className="text-hawk-accent">Try Again</Text>
+                  <Text className="text-hawk-accent text-sm">Try Again</Text>
                 </TouchableOpacity>
               </View>
             )}
           </Card>
         </View>
 
-        {/* Additional Info */}
-        <View className="px-4 mb-6">
-          <Text className="text-dark-text-primary font-semibold text-lg mb-3">
+        {/* Additional Info - More compact */}
+        <View className="px-4 mb-4">
+          <Text className="text-dark-text-primary font-semibold text-base mb-2">
             Details
           </Text>
-          <Card variant="surface">
-            <View className="space-y-3">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-dark-text-muted">Contract Address</Text>
+          <Card variant="surface" className="p-3">
+            <View className="space-y-2">
+              <View className="flex-row justify-between items-center py-1">
+                <Text className="text-dark-text-muted text-sm">Contract Address</Text>
                 <TouchableOpacity>
-                  <Text className="text-hawk-accent font-mono text-sm">
+                  <Text className="text-hawk-accent font-mono text-xs">
                     {coin.address?.slice(0, 6)}...{coin.address?.slice(-4)}
                   </Text>
                 </TouchableOpacity>
               </View>
               
               {coin.createdAt && (
-                <View className="flex-row justify-between items-center border-t border-dark-border pt-3">
-                  <Text className="text-dark-text-muted">Created</Text>
-                  <Text className="text-dark-text-secondary">
+                <View className="flex-row justify-between items-center border-t border-dark-border pt-2">
+                  <Text className="text-dark-text-muted text-sm">Created</Text>
+                  <Text className="text-dark-text-secondary text-sm">
                     {new Date(coin.createdAt).toLocaleDateString()}
                   </Text>
                 </View>
               )}
               
-              <View className="flex-row justify-between items-center border-t border-dark-border pt-3">
-                <Text className="text-dark-text-muted">Network</Text>
-                <Text className="text-dark-text-secondary">Base</Text>
+              <View className="flex-row justify-between items-center border-t border-dark-border pt-2">
+                <Text className="text-dark-text-muted text-sm">Network</Text>
+                <Text className="text-dark-text-secondary text-sm">Base</Text>
               </View>
             </View>
           </Card>
-        </View>
 
-        {/* Bottom Spacing for floating buttons */}
-        <View className="h-20" />
+        </View>
+        {/* Spacer to add gap between details and floating buttons */}
+        <View style={{ height: 32 }} />
       </ScrollView>
 
-      {/* Floating Action Buttons */}
-      <View className="absolute bottom-4 left-4 right-4 flex-row space-x-3">
+      {/* Floating Action Buttons - Fixed positioning */}
+    <View
+      className="absolute left-0 right-0 bg-dark-bg border-t border-dark-border"
+      style={{
+        bottom: insets.bottom ? insets.bottom + 12 : 24, // Move it down a bit
+        paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
+      }}
+    >
+      <View className="flex-row px-4 py-3" style={{ gap: 16 }}>
         <Button
-          title="Buy"
-          onPress={() => handleTrade('buy')}
-          variant="primary"
-          className="flex-1"
+        title="Buy"
+        onPress={() => handleTrade('buy')}
+        variant="primary"
+        className="flex-1"
         />
         <Button
-          title="Sell"
-          onPress={() => handleTrade('sell')}
-          variant="secondary" 
-          className="flex-1"
+        title="Sell"
+        onPress={() => handleTrade('sell')}
+        variant="secondary"
+        className="flex-1"
         />
       </View>
+    </View>
     </SafeAreaView>
   );
 };
