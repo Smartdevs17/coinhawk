@@ -109,24 +109,22 @@ export const TrendingScreen: React.FC = () => {
         break;
     }
 
-    filtered.sort((a, b) => {
-      if (!a || !b) return 0;
-      
-      switch (selectedSort) {
-        case 'Market Cap':
-          return parseNumericValue(b.marketCap || '') - parseNumericValue(a.marketCap || '');
-        case 'Volume':
-          return parseNumericValue(b.volume24h || '') - parseNumericValue(a.volume24h || '');
-        case 'Price':
-          return parseNumericValue(b.price || '') - parseNumericValue(a.price || '');
-        case '24h Change':
-          const aChange = parseFloat((a.change24h || '0').replace(/[+%]/g, ''));
-          const bChange = parseFloat((b.change24h || '0').replace(/[+%]/g, ''));
-          return bChange - aChange;
-        default:
-          return 0;
-      }
-    });
+   filtered.sort((a, b) => {
+    switch (selectedSort) {
+      case 'Market Cap':
+        return parseFloat(b.marketCap.replace(/[$M]/g, '')) - parseFloat(a.marketCap.replace(/[$M]/g, ''));
+      case 'Volume':
+        return parseFloat(b.volume24h.replace(/[$MK]/g, '')) - parseFloat(a.volume24h.replace(/[$MK]/g, ''));
+      case 'Price':
+        return parseFloat(b.price.replace('$', '')) - parseFloat(a.price.replace('$', ''));
+      case '24h Change':
+        const aChange = parseFloat(a.change24h.replace(/[+%]/g, ''));
+        const bChange = parseFloat(b.change24h.replace(/[+%]/g, ''));
+        return bChange - aChange;
+      default:
+        return 0;
+    }
+  });
 
     return filtered;
   }, [allCoins, searchQuery, activeFilter, selectedSort]);
