@@ -1,4 +1,4 @@
-// services/api.ts - API service layer
+// services/api.ts - Updated with support for multiple data categories
 
 import { 
   ApiResponse, 
@@ -10,10 +10,12 @@ import {
 } from '../types/api';
 
 // Configuration
-// const API_BASE_URL = 'http://localhost:5000/api';
-const API_BASE_URL = 'https://coinhawk-api.blockfuselabs.com/api'; // Production API URL
+const API_BASE_URL = 'https://coinhawk-api.blockfuselabs.com/api';
 
-// Generic HTTP client
+// Add new type for data categories
+export type CoinCategory = 'trending' | 'topGainers' | 'mostValuable' | 'new';
+
+// Generic HTTP client (unchanged)
 class HttpClient {
   private baseURL: string;
 
@@ -76,9 +78,8 @@ class HttpClient {
 // Create HTTP client instance
 const httpClient = new HttpClient(API_BASE_URL);
 
-// Utility functions to transform API data to component format
+// Enhanced utility function to transform API data (unchanged)
 export const transformCoinData = (coinData: CoinData): CoinPost => {
-  // Calculate percentage change for display
   const formatChange = (marketCapDelta: string, marketCap: string): string => {
     const delta = parseFloat(marketCapDelta);
     const cap = parseFloat(marketCap);
@@ -90,7 +91,6 @@ export const transformCoinData = (coinData: CoinData): CoinPost => {
     return `${sign}${percentChange.toFixed(1)}%`;
   };
 
-  // Format price with appropriate decimal places
   const formatPrice = (priceInUsdc: string | null): string => {
     if (!priceInUsdc) return '$0.00';
     
@@ -101,7 +101,6 @@ export const transformCoinData = (coinData: CoinData): CoinPost => {
     return `$${price.toFixed(4)}`;
   };
 
-  // Format large numbers
   const formatNumber = (value: string): string => {
     const num = parseFloat(value);
     if (num >= 1e9) return `$${(num / 1e9).toFixed(1)}B`;
@@ -111,7 +110,7 @@ export const transformCoinData = (coinData: CoinData): CoinPost => {
   };
 
   return {
-    id: coinData.address, // Use address as ID for uniqueness
+    id: coinData.address,
     name: coinData.name,
     symbol: coinData.symbol,
     price: formatPrice(coinData.tokenPrice.priceInUsdc),
@@ -119,7 +118,7 @@ export const transformCoinData = (coinData: CoinData): CoinPost => {
     marketCap: formatNumber(coinData.marketCap),
     volume24h: formatNumber(coinData.volume24h),
     holders: coinData.uniqueHolders,
-    verified: coinData.creatorProfile?.avatar !== null, // Simple verification logic
+    verified: coinData.creatorProfile?.avatar !== null,
     description: coinData.description,
     image: coinData.mediaContent?.previewImage?.small,
     address: coinData.address,
@@ -127,7 +126,7 @@ export const transformCoinData = (coinData: CoinData): CoinPost => {
   };
 };
 
-// Coin API implementation
+// Coin API implementation (unchanged)
 export const coinApi: CoinApiEndpoints = {
   new: async () => {
     return httpClient.get<CoinData[]>('/coins/new');
@@ -154,36 +153,29 @@ export const coinApi: CoinApiEndpoints = {
   },
 };
 
-// Mock Watchlist API (since these endpoints don't exist yet)
-// These will need to be implemented on the backend
+// Mock Watchlist API (unchanged)
 export const watchlistApi: WatchlistApiEndpoints = {
   getWatchlist: async () => {
-    // For now, return mock data from localStorage or in-memory storage
-    // In production, this would be: return httpClient.get<string[]>('/watchlist');
-    const mockWatchlist = ['0x1f6e1d08368fd4d8b2250ab0600dd2cb7f643287']; // TBD token as example
+    const mockWatchlist = ['0x1f6e1d08368fd4d8b2250ab0600dd2cb7f643287'];
     return { success: true, data: mockWatchlist };
   },
 
   addToWatchlist: async (coinId: string) => {
-    // Mock implementation - would be: return httpClient.post<void>(`/watchlist/${coinId}`);
     console.log('Added to watchlist:', coinId);
     return { success: true, data: undefined };
   },
 
   removeFromWatchlist: async (coinId: string) => {
-    // Mock implementation - would be: return httpClient.delete<void>(`/watchlist/${coinId}`);
     console.log('Removed from watchlist:', coinId);
     return { success: true, data: undefined };
   },
 
   getAlerts: async () => {
-    // Mock implementation - would be: return httpClient.get<PriceAlert[]>('/alerts');
     const mockAlerts: PriceAlert[] = [];
     return { success: true, data: mockAlerts };
   },
 
   createAlert: async (alert) => {
-    // Mock implementation - would be: return httpClient.post<PriceAlert>('/alerts', alert);
     const newAlert: PriceAlert = {
       ...alert,
       id: Date.now().toString(),
@@ -194,7 +186,6 @@ export const watchlistApi: WatchlistApiEndpoints = {
   },
 
   updateAlert: async (alertId: string, updates) => {
-    // Mock implementation - would be: return httpClient.put<PriceAlert>(`/alerts/${alertId}`, updates);
     console.log('Updated alert:', alertId, updates);
     const updatedAlert: PriceAlert = {
       id: alertId,
@@ -209,45 +200,73 @@ export const watchlistApi: WatchlistApiEndpoints = {
   },
 
   deleteAlert: async (alertId: string) => {
-    // Mock implementation - would be: return httpClient.delete<void>(`/alerts/${alertId}`);
     console.log('Deleted alert:', alertId);
     return { success: true, data: undefined };
   },
 };
 
-// High-level API functions for components
-export const getCoinsForWatchlist = async (): Promise<CoinPost[]> => {
+// UPDATED: Enhanced API functions that support multiple categories
+export const getCoinsByCategory = async (category: CoinCategory): Promise<CoinPost[]> => {
   try {
-    const response = await coinApi.trending();
+    let response: ApiResponse<CoinData[]>;
+    
+    switch (category) {
+      case 'trending':
+        response = await coinApi.trending();
+        break;
+      case 'topGainers':
+        response = await coinApi.topGainers();
+        break;
+      case 'mostValuable':
+        response = await coinApi.mostValuable();
+        break;
+      case 'new':
+        response = await coinApi.new();
+        break;
+      default:
+        response = await coinApi.trending();
+    }
+
     if (response.success) {
       return response.data.map(transformCoinData);
     }
-    throw new Error('Failed to fetch coins');
+    throw new Error(`Failed to fetch ${category} coins`);
   } catch (error) {
-    console.error('Error fetching coins for watchlist:', error);
+    console.error(`Error fetching ${category} coins:`, error);
     return [];
   }
 };
 
-export const searchCoins = async (query: string): Promise<CoinPost[]> => {
+// Updated function for backwards compatibility
+export const getCoinsForWatchlist = async (category: CoinCategory = 'trending'): Promise<CoinPost[]> => {
+  return getCoinsByCategory(category);
+};
+
+// Enhanced search that can search across all categories
+export const searchCoins = async (query: string, categories: CoinCategory[] = ['trending']): Promise<CoinPost[]> => {
   try {
-    // For now, get trending coins and filter locally
-    // In production, you might want a dedicated search endpoint
-    const response = await coinApi.trending();
-    if (response.success) {
-      const allCoins = response.data.map(transformCoinData);
-      return allCoins.filter(coin => 
-        coin.name.toLowerCase().includes(query.toLowerCase()) ||
-        coin.symbol.toLowerCase().includes(query.toLowerCase())
-      );
-    }
-    throw new Error('Failed to search coins');
+    // Get coins from all specified categories
+    const allCoinPromises = categories.map(category => getCoinsByCategory(category));
+    const allCoinArrays = await Promise.all(allCoinPromises);
+    
+    // Flatten and deduplicate based on address
+    const allCoins = allCoinArrays.flat();
+    const uniqueCoins = allCoins.filter((coin, index, self) => 
+      self.findIndex(c => c.address === coin.address) === index
+    );
+    
+    // Filter by query
+    return uniqueCoins.filter(coin => 
+      coin.name.toLowerCase().includes(query.toLowerCase()) ||
+      coin.symbol.toLowerCase().includes(query.toLowerCase())
+    );
   } catch (error) {
     console.error('Error searching coins:', error);
     return [];
   }
 };
 
+// Keep existing functions for backwards compatibility
 export const getCoinDetails = async (address: string): Promise<CoinPost | null> => {
   try {
     const response = await coinApi.details(address);

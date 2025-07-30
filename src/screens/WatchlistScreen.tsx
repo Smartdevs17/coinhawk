@@ -1,4 +1,4 @@
-// screens/WatchlistScreen.tsx - Improved with toast and better alert management
+// screens/WatchlistScreen.tsx - Improved with better data integration
 
 import React, { useState } from 'react';
 import {
@@ -23,7 +23,7 @@ export const WatchlistScreen: React.FC = () => {
   // Toast system
   const { toast, showSuccess, showError, showWarning, showInfo, hideToast } = useToast();
 
-  // API integration with toast support
+  // API integration with improved data loading
   const {
     watchlistCoins,
     availableCoins,
@@ -41,7 +41,6 @@ export const WatchlistScreen: React.FC = () => {
     deleteAlert,
     refreshData,
   } = useWatchlist((message, type) => {
-    // Pass toast function to the hook
     switch (type) {
       case 'success':
         showSuccess(message);
@@ -114,7 +113,6 @@ export const WatchlistScreen: React.FC = () => {
     }
   };
 
-  // Improved alert toggle with confirmation
   const handleToggleAlert = (alert: PriceAlert) => {
     const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
     const coinName = coin?.name || 'coin';
@@ -133,7 +131,6 @@ export const WatchlistScreen: React.FC = () => {
     );
   };
 
-  // Improved alert deletion with confirmation
   const handleDeleteAlert = (alert: PriceAlert) => {
     const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
     const coinName = coin?.name || 'coin';
@@ -167,7 +164,6 @@ export const WatchlistScreen: React.FC = () => {
       onRemoveFromWatchlist(item);
     };
 
-    // Render alert indicator if there are alerts
     const renderAlertIndicator = () => {
       if (!item.alertsCount || item.alertsCount === 0) {
         return null;
@@ -190,7 +186,6 @@ export const WatchlistScreen: React.FC = () => {
       );
     };
 
-    // Render verification badge
     const renderVerificationBadge = () => {
       if (!item.verified) {
         return null;
@@ -310,7 +305,6 @@ export const WatchlistScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
-  // Improved alert rendering with better visual distinction
   const renderActiveAlert = (alert: PriceAlert) => {
     const coin = watchlistCoins.find(c => c.id === alert.coinPostId);
     if (!coin) return null;
@@ -339,9 +333,7 @@ export const WatchlistScreen: React.FC = () => {
             </View>
           </View>
           
-          {/* Improved action buttons with better separation */}
           <View className="flex-row justify-between items-center pt-3 border-t border-dark-border">
-            {/* Toggle Button - More prominent */}
             <TouchableOpacity
               onPress={() => handleToggleAlert(alert)}
               className={`flex-1 mr-2 py-3 px-4 rounded-xl border ${
@@ -358,14 +350,13 @@ export const WatchlistScreen: React.FC = () => {
                   color={alert.isActive ? "#10b981" : "#6b7280"} 
                 />
                 <Text className={`ml-2 text-sm font-semibold ${
-                  alert.isActive ? 'text-green-dark-500' : 'text-gray-dark-400'
+                  alert.isActive ? 'text-green-500' : 'text-gray-400'
                 }`}>
                   {alert.isActive ? 'Pause' : 'Resume'}
                 </Text>
               </View>
             </TouchableOpacity>
             
-            {/* Delete Button - Clearly separated and styled as destructive */}
             <TouchableOpacity
               onPress={() => handleDeleteAlert(alert)}
               className="px-4 py-3 rounded-xl border border-red-500 bg-red-500 bg-opacity-10"
@@ -373,7 +364,7 @@ export const WatchlistScreen: React.FC = () => {
             >
               <View className="flex-row items-center">
                 <Icon name="🗑" size={14} color="#ef4444" />
-                <Text className="ml-2 text-sm font-semibold text-red-dark-500">
+                <Text className="ml-2 text-sm font-semibold text-red-500">
                   Delete
                 </Text>
               </View>
@@ -447,7 +438,7 @@ export const WatchlistScreen: React.FC = () => {
       </View>
 
       <ScrollView
-        className="flex-1 px-4"
+        className="flex-1"
         contentContainerStyle={{ paddingBottom: 112 }}
         refreshControl={
           <RefreshControl
@@ -459,7 +450,7 @@ export const WatchlistScreen: React.FC = () => {
       >
         {/* Watchlist Items */}
         {watchlistCoins.length > 0 ? (
-          <View className="py-4">
+          <View className="py-4 px-4">
             <FlatList
               data={watchlistCoins}
               renderItem={renderWatchlistItem}
@@ -485,9 +476,9 @@ export const WatchlistScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Improved Active Alerts Section */}
+        {/* Active Alerts Section */}
         {alerts.length > 0 && (
-          <View className="py-4">
+          <View className="py-4 px-4">
             <Text className="text-dark-text-primary font-semibold text-lg mb-3">
               🔔 Price Alerts ({alerts.filter(a => a.isActive).length} active, {alerts.length} total)
             </Text>
@@ -527,7 +518,11 @@ export const WatchlistScreen: React.FC = () => {
             </View>
           </View>
 
-          <ScrollView className="flex-1 px-4 py-4">
+          <ScrollView 
+                  className="flex-1 px-4 py-4"
+                  contentContainerStyle={{ paddingBottom: 100 }}
+            >
+            
             <FlatList
               data={availableCoins}
               renderItem={renderAvailableCoin}
@@ -580,7 +575,7 @@ export const WatchlistScreen: React.FC = () => {
                 }`}
               >
                 <Text className={`text-center font-medium ${
-                  alertType === 'above' ? 'text-dark-hawk-accent' : 'text-dark-text-secondary'
+                  alertType === 'above' ? 'text-hawk-accent' : 'text-dark-text-secondary'
                 }`}>
                   Price Above
                 </Text>
@@ -594,7 +589,7 @@ export const WatchlistScreen: React.FC = () => {
                 }`}
               >
                 <Text className={`text-center font-medium ${
-                  alertType === 'below' ? 'text-dark-hawk-accent' : 'text-dark-text-secondary'
+                  alertType === 'below' ? 'text-hawk-accent' : 'text-dark-text-secondary'
                 }`}>
                   Price Below
                 </Text>

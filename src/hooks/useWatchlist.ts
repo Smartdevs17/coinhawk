@@ -1,3 +1,5 @@
+// hooks/useWatchlist.ts - Enhanced with better data integration
+
 import { useState, useEffect, useCallback } from 'react';
 import { 
   CoinPost, 
@@ -5,10 +7,10 @@ import {
   WatchlistItem 
 } from '../types/api';
 import { 
-  getCoinsForWatchlist,
+  getCoinsByCategory,
   searchCoins,
   getCoinDetails,
-  watchlistApi 
+  watchlistApi,
 } from '../services/api';
 
 interface UseWatchlistReturn {
@@ -72,6 +74,31 @@ export const useWatchlist = (
 
   const availableCoins = allCoins.filter(coin => !watchlistIds.includes(coin.id));
 
+  // Load data from all available endpoints
+  const loadAllCoinsData = useCallback(async () => {
+    try {
+      // Load from all endpoints in parallel
+      const [trendingCoins, topGainersCoins, mostValuableCoins, newCoins] = await Promise.all([
+        getCoinsByCategory('trending'),
+        getCoinsByCategory('topGainers'),
+        getCoinsByCategory('mostValuable'),
+        getCoinsByCategory('new')
+      ]);
+
+      // Combine all coins and remove duplicates based on address
+      const allCoinsArray = [...trendingCoins, ...topGainersCoins, ...mostValuableCoins, ...newCoins];
+      const uniqueCoins = allCoinsArray.filter((coin, index, self) => 
+        self.findIndex(c => c.address === coin.address) === index
+      );
+
+      setAllCoins(uniqueCoins);
+      return uniqueCoins;
+    } catch (err) {
+      console.error('Error loading coins data:', err);
+      throw err;
+    }
+  }, []);
+
   // Initialize data
   const initializeData = useCallback(async () => {
     try {
@@ -92,9 +119,8 @@ export const useWatchlist = (
         setAlerts(alertsResponse.data);
       }
 
-      // Fetch available coins
-      const coins = await getCoinsForWatchlist();
-      setAllCoins(coins);
+      // Load all coins data
+      await loadAllCoinsData();
 
     } catch (err) {
       console.error('Error initializing watchlist data:', err);
@@ -104,31 +130,30 @@ export const useWatchlist = (
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadAllCoinsData]);
 
-  // Search coins
+  // Search coins across all data
   const performSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
-      // Reset to all coins when search is cleared
-      const coins = await getCoinsForWatchlist();
-      setAllCoins(coins);
+      // Restore original data when search is cleared
+      await loadAllCoinsData();
       return;
     }
 
     try {
       setSearchLoading(true);
-      const searchResults = await searchCoins(query);
+      // Search across all categories
+      const searchResults = await searchCoins(query, ['trending', 'topGainers', 'mostValuable', 'new']);
       setAllCoins(searchResults);
     } catch (err) {
       console.error('Error searching coins:', err);
-      // Don't set main error state for search failures, just show toast
       showToast('Search failed. Please try again.', 'warning');
     } finally {
       setSearchLoading(false);
     }
-  }, []);
+  }, [loadAllCoinsData]);
 
-  // Actions with toast feedback
+  // Actions with toast feedback (unchanged logic)
   const addToWatchlist = useCallback(async (coinId: string, coinName?: string): Promise<boolean> => {
     try {
       const response = await watchlistApi.addToWatchlist(coinId);
@@ -158,7 +183,6 @@ export const useWatchlist = (
       
       if (response.success) {
         setWatchlistIds(prev => prev.filter(id => id !== coinId));
-        // Also remove any alerts for this coin
         setAlerts(prev => prev.filter(alert => alert.coinPostId !== coinId));
         setError(null);
         showToast(
@@ -267,7 +291,7 @@ export const useWatchlist = (
       setRefreshing(true);
       setError(null);
 
-      // Refresh all data
+      // Refresh watchlist and alerts
       const [watchlistResponse, alertsResponse] = await Promise.all([
         watchlistApi.getWatchlist(),
         watchlistApi.getAlerts()
@@ -281,11 +305,10 @@ export const useWatchlist = (
         setAlerts(alertsResponse.data);
       }
 
-      // Refresh coins data
-      const coins = await getCoinsForWatchlist();
-      setAllCoins(coins);
+      // Refresh all coins data
+      await loadAllCoinsData();
       
-      showToast('Watchlist refreshed successfully!', 'success');
+      // showToast('Watchlist refreshed successfully!', 'success');
 
     } catch (err) {
       console.error('Error refreshing data:', err);
@@ -295,7 +318,7 @@ export const useWatchlist = (
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [loadAllCoinsData]);
 
   // Effects
   useEffect(() => {
