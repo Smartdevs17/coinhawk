@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -9,11 +10,30 @@ import { TrendingScreen } from '../screens/TrendingScreen';
 import { PortfolioScreen } from '../screens/PortfolioScreen';
 import { WatchlistScreen } from '../screens/WatchlistScreen';
 import { TradeScreen } from '../screens/TradeScreen';
+import { CoinDetailsScreen } from '../screens/CoinDetailsScreen';
 
 // Import UI components
 import { Icon } from '../components/ui';
 
-const Tab = createBottomTabNavigator();
+// Navigation types
+export type RootStackParamList = {
+  MainTabs: undefined;
+  CoinDetails: {
+    coin?: import('../types').CoinPost;
+    coinId?: string;
+  };
+};
+
+export type TabParamList = {
+  Home: undefined;
+  Trending: undefined;
+  Portfolio: undefined;
+  Watchlist: undefined;
+  Trade: undefined;
+};
+
+const Tab = createBottomTabNavigator<TabParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
 const TabNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -78,10 +98,33 @@ const TabNavigator: React.FC = () => {
   );
 };
 
+// Main Stack Navigator that includes tabs and modal screens
+const RootNavigator: React.FC = () => {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        presentation: 'card',
+      }}
+    >
+      <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Screen 
+        name="CoinDetails" 
+        component={CoinDetailsScreen}
+        options={{
+          presentation: 'modal', // Makes it slide up like a modal
+          gestureEnabled: true,
+          gestureDirection: 'vertical',
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
+
 export const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
-      <TabNavigator />
+      <RootNavigator />
     </NavigationContainer>
   );
 };

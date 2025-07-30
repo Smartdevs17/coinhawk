@@ -1,4 +1,3 @@
-
 export interface CoinPost {
   id: string;
   name: string;
@@ -11,6 +10,9 @@ export interface CoinPost {
   description?: string;
   verified?: boolean;
   rank?: number;
+  address: string;           
+  image?: string;       
+  createdAt?: string;     
 }
 
 export interface MarketData {
@@ -80,4 +82,65 @@ export interface TradingOrder {
   status: 'pending' | 'filled' | 'cancelled' | 'partial';
   timestamp: string;
   fees: string;
+}
+
+// BONUS: Additional interfaces that might be useful for the coin details screen
+
+// Extended coin details with additional information
+export interface CoinDetails extends CoinPost {
+  // Price history and stats
+  priceChange1h?: string;
+  priceChange7d?: string;
+  priceChange30d?: string;
+  
+  // Advanced metrics
+  fullyDilutedMarketCap?: string;
+  circulatingSupply?: string;
+  totalSupply?: string;
+  maxSupply?: string;
+  
+  // Social and community metrics
+  socialLinks?: {
+    website?: string;
+    twitter?: string;
+    telegram?: string;
+    discord?: string;
+  };
+  
+  // Trading metrics
+  allTimeHigh?: string;
+  allTimeLow?: string;
+  tradingVolume7d?: string;
+  liquidityScore?: number;
+  
+  // Metadata
+  tags?: string[];
+  category?: string;
+  launchDate?: string;
+  auditStatus?: 'verified' | 'pending' | 'not_audited';
+}
+
+// AI Summary response structure
+export interface AISummary {
+  summary: string;
+  sentiment: 'bullish' | 'bearish' | 'neutral';
+  keyPoints: string[];
+  riskLevel: 'low' | 'medium' | 'high';
+  confidence: number; // 0-100
+  generatedAt: string;
+}
+
+// Chart data for price history
+export interface PricePoint {
+  timestamp: number;
+  price: number;
+  volume: number;
+}
+
+export interface ChartData {
+  timeframe: Timeframe;
+  data: PricePoint[];
+  currentPrice: number;
+  change: string;
+  changePercent: string;
 }
