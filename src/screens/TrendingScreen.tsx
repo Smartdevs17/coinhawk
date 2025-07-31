@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+// Replace src/screens/TrendingScreen.tsx with this:
+
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,208 +10,140 @@ import {
   TouchableOpacity,
   TextInput,
   RefreshControl,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import { CoinPost } from '../types';
-import { PriceChangeIndicator, Icon, LoadingSpinner } from '../components/ui';
-import { getCoinsByCategory } from '../services/api';
+import { CoinPost } from '../types/api';
+import { Button, Card, PriceChangeIndicator, Icon, LoadingSpinner } from '../components/ui';
+import { useTrending } from '../hooks/useTrending';
 
-type RootStackParamList = {
-  MainTabs: undefined;
-  CoinDetails: {
-    coin?: CoinPost;
-    coinId?: string;
-  };
-};
-
-type NavigationProp = StackNavigationProp<RootStackParamList>;
-type FilterType = 'All' | 'Gainers' | 'Losers' | 'New';
-type SortType = 'Market Cap' | 'Volume' | 'Price' | '24h Change';
+type FilterType = 'All' | 'Gainers' | 'New';
 
 export const TrendingScreen: React.FC = () => {
-  const navigation = useNavigation<NavigationProp>();
-  const [activeFilter, setActiveFilter] = useState<FilterType>('All');
-  const [selectedSort, setSelectedSort] = useState<SortType>('Market Cap');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const {
+    coins,
+    loading,
+    refreshing,
+    error,
+    activeFilter,
+    setActiveFilter,
+    selectedSort,
+    setSelectedSort,
+    searchQuery,
+    setSearchQuery,
+    handleRefresh,
+    totalCoins,
+    gainersCount,
+    losersCount,
+    newTodayCount,
+  } = useTrending();
+
   const [showSortDropdown, setShowSortDropdown] = useState(false);
-  const [allCoins, setAllCoins] = useState<CoinPost[]>([]);
 
-  const filters: FilterType[] = ['All', 'Gainers', 'Losers', 'New'];
-  const sortOptions: SortType[] = ['Market Cap', 'Volume', 'Price', '24h Change'];
+  const filters: FilterType[] = ['All', 'Gainers', 'New'];
+  const sortOptions = ['Market Cap', 'Volume', 'Price', '24h Change'];
 
-  const loadAllCoins = async (isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
+  const renderMiniChart = () => (
+    <View className="w-16 h-8 bg-dark-surface-light rounded items-center justify-center">
+      <Icon name="📈" size={12} color="#10b981" />
+    </View>
+  );
 
-    try {
-      const [trendingCoins, newCoins, topGainersCoins] = await Promise.all([
-        getCoinsByCategory('trending'),
-        getCoinsByCategory('new'),
-        getCoinsByCategory('topGainers')
-      ]);
-
-      const allCoinsArray = [...(trendingCoins || []), ...(newCoins || []), ...(topGainersCoins || [])];
-      const uniqueCoins = allCoinsArray.filter((coin, index, self) => 
-        coin && coin.address && self.findIndex(c => c && c.address === coin.address) === index
-      );
-
-      setAllCoins(uniqueCoins);
-    } catch (error) {
-      console.error('Failed to load trending coins:', error);
-      setAllCoins([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    loadAllCoins();
-  }, []);
-
-  const parseNumericValue = (value: string): number => {
-    if (!value) return 0;
-    const numericString = value.replace(/[$,KMB]/g, '');
-    let multiplier = 1;
-    
-    if (value.includes('K')) multiplier = 1000;
-    else if (value.includes('M')) multiplier = 1000000;
-    else if (value.includes('B')) multiplier = 1000000000;
-    
-    return parseFloat(numericString) * multiplier || 0;
-  };
-
-  const filteredAndSortedPosts = useMemo(() => {
-    let filtered = [...allCoins];
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(post => 
-        post && 
-        ((post.name && post.name.toLowerCase().includes(query)) ||
-         (post.symbol && post.symbol.toLowerCase().includes(query)))
-      );
-    }
-
-    switch (activeFilter) {
-      case 'Gainers':
-        filtered = filtered.filter(post => post.change24h && post.change24h.startsWith('+'));
-        break;
-      case 'Losers':
-        filtered = filtered.filter(post => post.change24h && post.change24h.startsWith('-'));
-        break;
-      case 'New':
-        filtered = filtered.filter((post, index) => index > 10);
-        break;
-    }
-
-   filtered.sort((a, b) => {
-    switch (selectedSort) {
-      case 'Market Cap':
-        return parseFloat(b.marketCap.replace(/[$M]/g, '')) - parseFloat(a.marketCap.replace(/[$M]/g, ''));
-      case 'Volume':
-        return parseFloat(b.volume24h.replace(/[$MK]/g, '')) - parseFloat(a.volume24h.replace(/[$MK]/g, ''));
-      case 'Price':
-        return parseFloat(b.price.replace('$', '')) - parseFloat(a.price.replace('$', ''));
-      case '24h Change':
-        const aChange = parseFloat(a.change24h.replace(/[+%]/g, ''));
-        const bChange = parseFloat(b.change24h.replace(/[+%]/g, ''));
-        return bChange - aChange;
-      default:
-        return 0;
-    }
-  });
-
-    return filtered;
-  }, [allCoins, searchQuery, activeFilter, selectedSort]);
-
-  const handleRefresh = () => {
-    loadAllCoins(true);
-  };
-
-  const handleCoinPress = (coin: CoinPost) => {
-    navigation.navigate('CoinDetails', { coin });
-  };
-
-  const renderMiniChart = () => {
-    return (
-      <View className="w-12 h-8 bg-dark-border rounded flex-row items-end justify-center gap-x-1 p-1">
-        <View className="w-1 bg-hawk-accent rounded-full" style={{ height: '30%' }} />
-        <View className="w-1 bg-hawk-accent rounded-full" style={{ height: '60%' }} />
-        <View className="w-1 bg-hawk-accent rounded-full" style={{ height: '40%' }} />
-        <View className="w-1 bg-hawk-accent rounded-full" style={{ height: '80%' }} />
-        <View className="w-1 bg-hawk-accent rounded-full" style={{ height: '50%' }} />
-      </View>
-    );
-  };
-
-const renderTrendingCoin = ({ item, index }: { item: CoinPost; index: number }) => {
-  if (!item) return null;
-
-  const displayName = typeof item.name === 'string' && item.name ? item.name.replace(/\n/g, ' ').trim() : 'Unknown';
-  const displaySymbol = typeof item.symbol === 'string' && item.symbol ? item.symbol.replace(/\n/g, ' ').trim() : '---';
-
-  return (
-    <TouchableOpacity activeOpacity={0.7} className="mb-3" onPress={() => handleCoinPress(item)}>
-      <View className="bg-dark-surface border border-dark-border rounded-xl p-4">
+  const renderCoinPost = ({ item, index }: { item: CoinPost; index: number }) => (
+    <TouchableOpacity>
+      <Card variant="surface" className="mb-3">
         <View className="flex-row items-center">
-          <View className="w-12 h-12 bg-hawk-accent rounded-full items-center justify-center mr-3">
-            <Text className="text-hawk-primary font-bold text-sm">#{index + 1}</Text>
+          {/* Rank and Icon */}
+          <View className="w-8 mr-3">
+            <Text className="text-dark-text-muted text-sm font-medium">
+              #{index + 1}
+            </Text>
           </View>
-          <View className="flex-1 mr-3">
+          
+          {/* Coin Info */}
+          <View className="flex-1">
             <View className="flex-row items-center mb-1">
-              <Text className="text-dark-text-primary font-semibold text-base">{displayName}</Text>
+              <Text className="text-dark-text-primary font-semibold mr-2">
+                {item.name}
+              </Text>
               {item.verified && (
-                <View className="ml-2">
-                  <Icon name="✓" size={14} color="#10b981" />
-                </View>
+                <Icon name="✓" size={14} color="#10b981" />
               )}
             </View>
-            <Text className="text-dark-text-secondary text-sm mb-1">{displaySymbol}</Text>
-            {item.holders && (
-              <Text className="text-dark-text-muted text-xs">{item.holders.toLocaleString()} holders</Text>
-            )}
+            <Text className="text-dark-text-secondary text-sm">{item.symbol}</Text>
+            <Text className="text-dark-text-muted text-xs mt-1">
+              {item.holders.toLocaleString()} holders
+            </Text>
           </View>
-          <View className="mr-3">{renderMiniChart()}</View>
+
+          {/* Mini Chart */}
+          <View className="mr-3">
+            {renderMiniChart()}
+          </View>
+
+          {/* Price and Change */}
           <View className="items-end">
-            <Text className="text-dark-text-primary font-semibold text-base">{item.price || '$0.00'}</Text>
-            {item.change24h && (
-              <PriceChangeIndicator change={item.change24h} size="sm" className="mt-1" />
-            )}
-            {item.volume24h && (
-              <Text className="text-dark-text-muted text-xs mt-1">Vol: {item.volume24h}</Text>
-            )}
+            <Text className="text-dark-text-primary font-semibold">
+              {item.price}
+            </Text>
+            <PriceChangeIndicator 
+              change={item.change24h} 
+              size="sm" 
+              className="mt-1"
+            />
+            <View className="mt-1">
+              <Text className="text-dark-text-muted text-xs">
+                Vol: {item.volume24h}
+              </Text>
+            </View>
           </View>
         </View>
-        <View className="mt-3 pt-3 border-t border-dark-border">
-          <View className="flex-row justify-between">
-            <Text className="text-dark-text-muted text-xs">Market Cap: {item.marketCap || 'N/A'}</Text>
-            <Text className="text-dark-text-muted text-xs">Rank: #{index + 1}</Text>
-          </View>
-        </View>
-      </View>
+      </Card>
     </TouchableOpacity>
   );
-};
+
+  // Show error state
+  if (error) {
+    return (
+      <SafeAreaView className="flex-1 bg-dark-bg">
+        <View className="flex-1 items-center justify-center px-4">
+          <Icon name="⚠️" size={48} color="#ef4444" />
+          <Text className="text-dark-text-primary text-lg font-semibold mt-4 text-center">
+            Failed to load data
+          </Text>
+          <Text className="text-dark-text-secondary text-center mt-2">
+            {error}
+          </Text>
+          <Button
+            title="Try Again"
+            variant="primary"
+            onPress={handleRefresh}
+            className="mt-6"
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
-      <View className="px-4 py-6 bg-dark-surface border-b border-dark-border">
-        <View className="flex-row items-center justify-between mb-4">
+      {/* Header */}
+      <View className="px-4 py-8 mt-4 bg-dark-surface border-b border-dark-border">
+        <View className="flex-row items-center justify-between mb-3">
           <Text className="text-xl font-bold text-dark-text-primary">🔥 Trending</Text>
-          <TouchableOpacity onPress={handleRefresh} disabled={loading || refreshing}>
-            <Icon name="🔄" size={20} color="#fbbf24" />
+          <TouchableOpacity onPress={handleRefresh} disabled={refreshing}>
+            <Icon 
+              name={refreshing ? "⏳" : "🔄"} 
+              size={20} 
+              color="#fbbf24" 
+            />
           </TouchableOpacity>
         </View>
+
+        {/* Search Bar */}
         <View className="bg-dark-bg rounded-xl px-4 py-3 flex-row items-center border border-dark-border">
           <Icon name="🔍" size={16} color="#94a3b8" />
           <TextInput
-            placeholder="Search trending tokens..."
+            placeholder="Search CoinPosts..."
             placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -222,75 +156,77 @@ const renderTrendingCoin = ({ item, index }: { item: CoinPost; index: number }) 
           )}
         </View>
       </View>
+
+      {/* Market Stats - Real Data */}
       <View className="px-4 py-3 bg-dark-surface border-b border-dark-border">
         <View className="flex-row justify-between">
-          <View className="items-center">
-            <Text className="text-dark-text-muted text-xs">Total</Text>
-            <Text className="text-dark-text-primary font-bold text-lg">{filteredAndSortedPosts.length}</Text>
+          <View>
+            <Text className="text-dark-text-muted text-xs">Total Posts</Text>
+            <Text className="text-dark-text-primary font-semibold">
+              {totalCoins}
+            </Text>
           </View>
-          <View className="items-center">
+          <View>
             <Text className="text-dark-text-muted text-xs">Gainers</Text>
-            <Text className="text-success-500 font-bold text-lg">
-              {filteredAndSortedPosts.filter(p => p.change24h && p.change24h.startsWith('+')).length}
+            <Text className="text-success-500 font-semibold">
+              {gainersCount}
             </Text>
           </View>
-          <View className="items-center">
+          <View>
             <Text className="text-dark-text-muted text-xs">Losers</Text>
-            <Text className="text-danger-500 font-bold text-lg">
-              {filteredAndSortedPosts.filter(p => p.change24h && p.change24h.startsWith('-')).length}
+            <Text className="text-danger-500 font-semibold">
+              {losersCount}
             </Text>
           </View>
-          <View className="items-center">
-            <Text className="text-dark-text-muted text-xs">New</Text>
-            <Text className="text-hawk-accent font-bold text-lg">
-              {filteredAndSortedPosts.filter((p, index) => index > 10).length}
+          <View>
+            <Text className="text-dark-text-muted text-xs">New Today</Text>
+            <Text className="text-hawk-accent font-semibold">
+              {newTodayCount}
             </Text>
           </View>
         </View>
       </View>
+
+      {/* Filter Tabs */}
       <View className="px-4 py-3">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-x-2">
             {filters.map((filter) => (
-              <TouchableOpacity
+              <Button
                 key={filter}
+                title={filter}
+                variant={activeFilter === filter ? 'primary' : 'secondary'}
+                size="sm"
                 onPress={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-xl ${
-                  activeFilter === filter 
-                    ? 'bg-hawk-accent' 
-                    : 'bg-dark-surface border border-dark-border'
-                }`}
-              >
-                <Text className={`font-medium ${
-                  activeFilter === filter 
-                    ? 'text-hawk-primary' 
-                    : 'text-dark-text-secondary'
-                }`}>
-                  {filter}
-                </Text>
-              </TouchableOpacity>
+              />
             ))}
           </View>
         </ScrollView>
       </View>
+
+      {/* Sort Controls */}
       <View className="px-4 pb-3">
         <View className="flex-row items-center justify-between">
-          <Text className="text-dark-text-secondary text-sm">{filteredAndSortedPosts.length} tokens</Text>
+          <Text className="text-dark-text-secondary text-sm">
+            {coins.length} results
+          </Text>
+          
           <View className="relative">
-            <TouchableOpacity
+            <Button
+              title={`Sort: ${selectedSort}`}
+              variant="ghost"
+              size="sm"
+              icon={<Icon name="⏷" size={12} color="#fbbf24" />}
               onPress={() => setShowSortDropdown(!showSortDropdown)}
-              className="flex-row items-center bg-dark-surface border border-dark-border rounded-lg px-3 py-2"
-            >
-              <Text className="text-dark-text-secondary text-sm mr-2">Sort: {selectedSort}</Text>
-              <Icon name="⏷" size={12} color="#fbbf24" />
-            </TouchableOpacity>
+            />
+            
             {showSortDropdown && (
-              <View className="absolute top-full right-0 mt-1 bg-dark-surface border border-dark-border rounded-xl py-2 z-10 min-w-40">
+              <View className="absolute top-full right-0 mt-1 bg-dark-surface border border-dark-border rounded-xl py-2 z-10 min-w-32">
                 {sortOptions.map((option) => (
                   <TouchableOpacity
                     key={option}
                     onPress={() => {
-                      setSelectedSort(option);
+                      setSelectedSort(option as any);
                       setShowSortDropdown(false);
                     }}
                     className="px-4 py-2"
@@ -309,30 +245,45 @@ const renderTrendingCoin = ({ item, index }: { item: CoinPost; index: number }) 
           </View>
         </View>
       </View>
+
+      {/* Loading State */}
       {loading && (
-        <View className="px-4 mb-4">
-          <LoadingSpinner variant="card" text="Loading trending tokens..." />
-        </View>
+        <LoadingSpinner 
+          variant="card" 
+          text="Loading real market data..." 
+          className="mx-4 mb-4"
+        />
       )}
+
+      {/* Coins List - Real Data */}
       <FlatList
-        data={filteredAndSortedPosts}
-        renderItem={renderTrendingCoin}
-        keyExtractor={(item) => item.id || item.address || Math.random().toString()}
+        data={coins}
+        renderItem={renderCoinPost}
+        keyExtractor={(item) => item.address}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#fbbf24"
+            colors={["#fbbf24"]}
+          />
+        }
         ListEmptyComponent={
-          !loading ? (
-            <View className="bg-dark-surface border border-dark-border rounded-xl p-12">
+          loading ? null : (
+            <Card variant="surface" className="py-8">
               <View className="items-center">
-                <Icon name="🔍" size={48} color="#64748b" />
-                <Text className="text-dark-text-secondary text-lg font-medium mt-4">No trending tokens found</Text>
-                <Text className="text-dark-text-muted text-center text-sm mt-2 px-8">
-                  Try adjusting your search or filters to find trending tokens
+                <Icon name="🔍" size={32} color="#94a3b8" />
+                <Text className="text-dark-text-secondary text-center mt-3">
+                  No CoinPosts found
+                </Text>
+                <Text className="text-dark-text-muted text-center text-sm mt-1">
+                  Try adjusting your search or filters
                 </Text>
               </View>
-            </View>
-          ) : null
+            </Card>
+          )
         }
       />
     </SafeAreaView>
