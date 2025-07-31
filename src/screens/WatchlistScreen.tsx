@@ -438,6 +438,8 @@ export const WatchlistScreen: React.FC = () => {
         </View>
       </View>
 
+// Replace the ScrollView section in your WatchlistScreen (around line 600):
+
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 112 }}
@@ -452,6 +454,9 @@ export const WatchlistScreen: React.FC = () => {
         {/* Watchlist Items */}
         {watchlistCoins.length > 0 ? (
           <View className="py-4 px-4">
+            <Text className="text-dark-text-primary font-semibold text-lg mb-3">
+              📌 Your Watchlist
+            </Text>
             <FlatList
               data={watchlistCoins}
               renderItem={renderWatchlistItem}
@@ -460,22 +465,54 @@ export const WatchlistScreen: React.FC = () => {
             />
           </View>
         ) : (
-          <View className="items-center justify-center py-16">
+          <View className="items-center justify-center py-8">
             <Icon name="👀" size={48} color="#64748b" />
             <Text className="text-dark-text-secondary text-lg font-medium mt-4">
               No coins in watchlist
             </Text>
             <Text className="text-dark-text-muted text-center mt-2 px-8">
-              Add coins to track their prices and set alerts
+              Add coins from the list below to track their prices and set alerts
             </Text>
-            <Button
-              title="Add Coins"
-              variant="primary"
-              onPress={() => setShowAddModal(true)}
-              className="mt-4"
-            />
           </View>
         )}
+
+        {/* Available Coins - Limited to 10 */}
+        <View className="py-4 px-4">
+          <Text className="text-dark-text-primary font-semibold text-lg mb-3">
+            🔍 Available Coins
+          </Text>
+          
+          {availableCoins.length > 0 ? (
+            <>
+              <FlatList
+                data={availableCoins.slice(0, 10)}
+                renderItem={renderAvailableCoin}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+              />
+              {availableCoins.length > 10 && (
+                <TouchableOpacity 
+                  onPress={() => setShowAddModal(true)}
+                  className="mt-4 bg-dark-surface border border-dark-border rounded-xl p-4"
+                >
+                  <View className="flex-row items-center justify-center">
+                    <Icon name="+" size={16} color="#fbbf24" />
+                    <Text className="text-hawk-accent font-medium ml-2">
+                      See More ({availableCoins.length - 10} more coins)
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <View className="items-center justify-center py-8">
+              <Icon name="🔍" size={32} color="#64748b" />
+              <Text className="text-dark-text-secondary text-lg font-medium mt-4">
+                Loading coins...
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* Active Alerts Section */}
         {alerts.length > 0 && (
