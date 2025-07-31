@@ -93,8 +93,8 @@ export const transformCoinData = (coinData: CoinData): CoinPost => {
 
   const formatPrice = (priceInUsdc: string | null): string => {
     if (!priceInUsdc) return '$0.00';
-    
-    const price = parseFloat(priceInUsdc);
+    // Multiply by 1e6 to account for base decimals
+    const price = parseFloat(priceInUsdc) * 10e6;
     if (price < 0.01) {
       return `$${price.toExponential(2)}`;
     }

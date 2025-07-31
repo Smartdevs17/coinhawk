@@ -333,43 +333,44 @@ export const WatchlistScreen: React.FC = () => {
             </View>
           </View>
           
-          <View className="flex-row justify-between items-center pt-3 border-t border-dark-border">
+            <View className="flex-row justify-between items-center pt-3 border-t border-dark-border">
             <TouchableOpacity
               onPress={() => handleToggleAlert(alert)}
               className={`flex-1 mr-2 py-3 px-4 rounded-xl border ${
-                alert.isActive 
-                  ? 'border-green-500 bg-green-500 bg-opacity-10' 
-                  : 'border-gray-400 bg-gray-400 bg-opacity-10'
+              alert.isActive 
+                ? 'border-green-500 bg-green-500 bg-opacity-10' 
+                : 'border-gray-400 bg-gray-400 bg-opacity-10'
               }`}
               activeOpacity={0.7}
             >
               <View className="flex-row items-center justify-center">
-                <Icon 
-                  name={alert.isActive ? "⏸" : "▶"} 
-                  size={14} 
-                  color={alert.isActive ? "#10b981" : "#6b7280"} 
-                />
-                <Text className={`ml-2 text-sm font-semibold ${
-                  alert.isActive ? 'text-green-500' : 'text-gray-400'
-                }`}>
-                  {alert.isActive ? 'Pause' : 'Resume'}
-                </Text>
+              <Icon 
+                name={alert.isActive ? "⏸" : "▶"} 
+                size={14} 
+                color={alert.isActive ? "#10b981" : "#6b7280"} 
+              />
+              <Text className={`ml-2 text-sm font-semibold ${
+                alert.isActive ? 'text-dark-green-500' : 'text-gray-400'
+              }`}>
+                {alert.isActive ? 'Pause' : 'Resume'}
+              </Text>
               </View>
             </TouchableOpacity>
             
             <TouchableOpacity
               onPress={() => handleDeleteAlert(alert)}
-              className="px-4 py-3 rounded-xl border border-red-500 bg-red-500 bg-opacity-10"
+              className="flex-1 py-3 px-4 rounded-xl border border-red-500 bg-red-500 bg-opacity-10"
               activeOpacity={0.7}
+              style={{ marginLeft: 8 }}
             >
-              <View className="flex-row items-center">
-                <Icon name="🗑" size={14} color="#ef4444" />
-                <Text className="ml-2 text-sm font-semibold text-red-500">
-                  Delete
-                </Text>
+              <View className="flex-row items-center justify-center">
+              <Icon name="🗑" size={14} color="#ef4444" />
+              <Text className="ml-2 text-sm font-semibold text-dark-500">
+                Delete
+              </Text>
               </View>
             </TouchableOpacity>
-          </View>
+            </View>
         </View>
       </Card>
     );
@@ -575,7 +576,7 @@ export const WatchlistScreen: React.FC = () => {
                 }`}
               >
                 <Text className={`text-center font-medium ${
-                  alertType === 'above' ? 'text-hawk-accent' : 'text-dark-text-secondary'
+                  alertType === 'above' ? 'text-dark-hawk-accent' : 'text-dark-text-secondary'
                 }`}>
                   Price Above
                 </Text>
@@ -589,7 +590,7 @@ export const WatchlistScreen: React.FC = () => {
                 }`}
               >
                 <Text className={`text-center font-medium ${
-                  alertType === 'below' ? 'text-hawk-accent' : 'text-dark-text-secondary'
+                  alertType === 'below' ? 'text-dark-hawk-accent' : 'text-dark-text-secondary'
                 }`}>
                   Price Below
                 </Text>

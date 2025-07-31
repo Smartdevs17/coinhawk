@@ -12,13 +12,28 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { CoinPost } from '../types/api';
 import { Button, Card, PriceChangeIndicator, Icon, LoadingSpinner } from '../components/ui';
 import { useTrending } from '../hooks/useTrending';
 
 type FilterType = 'All' | 'Gainers' | 'New';
 
+// Navigation types for the coin details screen
+type RootStackParamList = {
+  MainTabs: undefined;
+  CoinDetails: {
+    coin?: CoinPost;
+    coinId?: string;
+  };
+};
+
+type TrendingScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
 export const TrendingScreen: React.FC = () => {
+  const navigation = useNavigation<TrendingScreenNavigationProp>();
+  
   const {
     coins,
     loading,
@@ -42,6 +57,16 @@ export const TrendingScreen: React.FC = () => {
   const filters: FilterType[] = ['All', 'Gainers', 'New'];
   const sortOptions = ['Market Cap', 'Volume', 'Price', '24h Change'];
 
+  // Navigate to coin details
+  const handleCoinPress = (coin: CoinPost) => {
+    try {
+      navigation.navigate('CoinDetails', { coin });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      Alert.alert('Error', 'Unable to open coin details');
+    }
+  };
+
   const renderMiniChart = () => (
     <View className="w-16 h-8 bg-dark-surface-light rounded items-center justify-center">
       <Icon name="📈" size={12} color="#10b981" />
@@ -49,7 +74,10 @@ export const TrendingScreen: React.FC = () => {
   );
 
   const renderCoinPost = ({ item, index }: { item: CoinPost; index: number }) => (
-    <TouchableOpacity>
+    <TouchableOpacity 
+      onPress={() => handleCoinPress(item)}
+      activeOpacity={0.7}
+    >
       <Card variant="surface" className="mb-3">
         <View className="flex-row items-center">
           {/* Rank and Icon */}
@@ -255,7 +283,7 @@ export const TrendingScreen: React.FC = () => {
         />
       )}
 
-      {/* Coins List - Real Data */}
+      {/* Coins List - Real Data with Navigation */}
       <FlatList
         data={coins}
         renderItem={renderCoinPost}

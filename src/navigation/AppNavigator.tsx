@@ -1,5 +1,10 @@
+
 import React from 'react';
-import { View, Text } from 'react-native';
+import {
+  View,
+  Text,
+
+} from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -15,12 +20,13 @@ import { CoinDetailsScreen } from '../screens/CoinDetailsScreen';
 
 // Import UI components
 import { Icon } from '../components/ui';
+import { CoinPost } from '../types/api';
 
-// Navigation types
+// Navigation type definitions
 export type RootStackParamList = {
   MainTabs: undefined;
   CoinDetails: {
-    coin?: import('../types').CoinPost;
+    coin?: CoinPost;
     coinId?: string;
   };
 };
@@ -35,6 +41,7 @@ export type TabParamList = {
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
+
 // Placeholder screen for Trade (still in development)
 const PlaceholderScreen = ({ title }: { title: string }) => (
   <View className="flex-1 bg-dark-bg items-center justify-center">
@@ -45,7 +52,6 @@ const PlaceholderScreen = ({ title }: { title: string }) => (
 );
 const PortfolioScreen = () => <PlaceholderScreen title="Portfolio" />;
 const TradeScreen = () => <PlaceholderScreen title="Trade" />;
-
 
 const TabNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -110,13 +116,13 @@ const TabNavigator: React.FC = () => {
   );
 };
 
-// Main Stack Navigator that includes tabs and modal screens
 const RootNavigator: React.FC = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        presentation: 'card',
+        cardStyle: { backgroundColor: '#0f172a' }, // dark-bg
+        animation: 'slide_from_right',
       }}
     >
       <Stack.Screen name="MainTabs" component={TabNavigator} />
@@ -124,9 +130,9 @@ const RootNavigator: React.FC = () => {
         name="CoinDetails" 
         component={CoinDetailsScreen}
         options={{
-          presentation: 'modal', // Makes it slide up like a modal
+          animation: 'slide_from_right',
           gestureEnabled: true,
-          gestureDirection: 'vertical',
+          gestureDirection: 'horizontal',
         }}
       />
     </Stack.Navigator>

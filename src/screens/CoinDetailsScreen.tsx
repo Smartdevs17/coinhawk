@@ -157,15 +157,17 @@ export const CoinDetailsScreen: React.FC = () => {
         </View>
       </View>
 
+// Replace the ScrollView and bottom buttons section in your CoinDetailsScreen:
+
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
+        // SIMPLIFIED: Remove complex contentContainerStyle calculations
         contentContainerStyle={{
-          paddingBottom: insets.bottom + 100, // Add safe area to bottom
-          paddingTop: 8, // Add a little space below header
+          paddingBottom: 120, // Fixed bottom padding for buttons
         }}
       >
-        {/* Coin Header - Reduced padding */}
+        {/* Coin Header */}
         <View className="p-4 bg-dark-surface border-b border-dark-border">
           <View className="flex-row items-center mb-3">
             <View className="w-12 h-12 bg-hawk-accent rounded-full items-center justify-center mr-3">
@@ -191,7 +193,7 @@ export const CoinDetailsScreen: React.FC = () => {
             </View>
           </View>
 
-          {/* Price and Stats - More compact */}
+          {/* Price and Stats */}
           <View className="flex-row items-center justify-between">
             <View>
               <Text className="text-dark-text-primary font-bold text-2xl">
@@ -206,7 +208,7 @@ export const CoinDetailsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Stats Cards - More compact */}
+        {/* Stats Cards */}
         <View className="p-4">
           <View className="flex-row justify-between mb-3">
             <Card variant="surface" className="flex-1 mr-2 p-3">
@@ -224,7 +226,7 @@ export const CoinDetailsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Description - More compact */}
+        {/* Description */}
         {coin.description && (
           <View className="px-4 mb-3">
             <Text className="text-dark-text-primary font-semibold text-base mb-2">
@@ -238,7 +240,7 @@ export const CoinDetailsScreen: React.FC = () => {
           </View>
         )}
 
-        {/* AI Summary Section - More compact */}
+        {/* AI Summary Section */}
         <View className="px-4 mb-3">
           <View className="flex-row items-center mb-2">
             <Icon name="🤖" size={18} color="#fbbf24" />
@@ -276,7 +278,7 @@ export const CoinDetailsScreen: React.FC = () => {
           </Card>
         </View>
 
-        {/* Additional Info - More compact */}
+        {/* Additional Info */}
         <View className="px-4 mb-4">
           <Text className="text-dark-text-primary font-semibold text-base mb-2">
             Details
@@ -307,18 +309,33 @@ export const CoinDetailsScreen: React.FC = () => {
               </View>
             </View>
           </Card>
-
         </View>
-        {/* Spacer to add gap between details and floating buttons */}
-        <View style={{ height: 32 }} />
       </ScrollView>
+
+      {/* FIXED: Simplified floating buttons without absolute positioning */}
+      {/* <View className="bg-dark-surface border-t border-dark-border px-4 py-3">
+        <View className="flex-row" style={{ gap: 16 }}>
+          <Button
+            title="Buy"
+            onPress={() => handleTrade('buy')}
+            variant="primary"
+            className="flex-1"
+          />
+          <Button
+            title="Sell"
+            onPress={() => handleTrade('sell')}
+            variant="secondary"
+            className="flex-1"
+          />
+        </View>
+      </View> */}
 
       {/* Floating Action Buttons - Fixed positioning */}
     <View
       className="absolute left-0 right-0 bg-dark-bg border-t border-dark-border"
       style={{
         bottom: insets.bottom ? insets.bottom + 12 : 24, // Move it down a bit
-        paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
+        // paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
       }}
     >
       <View className="flex-row px-4 py-3" style={{ gap: 16 }}>
