@@ -350,7 +350,7 @@ export const WatchlistScreen: React.FC = () => {
                 color={alert.isActive ? "#10b981" : "#6b7280"} 
               />
               <Text className={`ml-2 text-sm font-semibold ${
-                alert.isActive ? 'text-dark-green-500' : 'text-gray-400'
+                alert.isActive ? 'text-dark-green-500' : 'text-dark-gray-400'
               }`}>
                 {alert.isActive ? 'Pause' : 'Resume'}
               </Text>
