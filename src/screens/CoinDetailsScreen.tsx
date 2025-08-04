@@ -139,9 +139,15 @@ export const CoinDetailsScreen: React.FC = () => {
         className="flex-row items-center justify-between px-4 py-2 bg-dark-surface border-b border-dark-border"
         style={{ paddingTop: insets.top + 12 }}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} className="flex-row items-center py-2">
-          <Icon name="←" size={20} color="#cbd5e1" />
-          <Text className="text-dark-text-secondary ml-2">Back</Text>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          className="flex-row items-center py-2"
+          style={{ minWidth: 60 }}
+        >
+          <Icon name="←" size={36} color="#cbd5e1" />
+          {/* <Text className="text-dark-text-secondary ml-2 text-base font-medium">
+            Back
+          </Text> */}
         </TouchableOpacity>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={handleWatchlist} className="mr-4 p-2">
@@ -249,33 +255,44 @@ export const CoinDetailsScreen: React.FC = () => {
             </Text>
           </View>
           
-          <Card variant="surface" className="p-3">
+            <Card variant="surface" className="p-3">
             {summaryLoading ? (
               <View className="items-center py-4">
-                <LoadingSpinner size="small" />
-                <Text className="text-dark-text-muted mt-2 text-sm">
-                  Generating AI analysis...
-                </Text>
+              <LoadingSpinner size="small" />
+              <Text className="text-dark-text-muted mt-2 text-sm">
+                Generating AI analysis...
+              </Text>
               </View>
             ) : aiSummary ? (
               <Text className="text-dark-text-secondary leading-5 text-sm">
-                {aiSummary}
+              {aiSummary.split(/(<mark>.*?<\/mark>)/g).map((part, idx) =>
+                part.startsWith('<mark>') && part.endsWith('</mark>') ? (
+                <Text
+                  key={idx}
+                  style={{ backgroundColor: '#fbbf24', color: '#1e293b', borderRadius: 3, paddingHorizontal: 2 }}
+                >
+                  {part.replace(/<\/?mark>/g, '')}
+                </Text>
+                ) : (
+                <Text key={idx}>{part}</Text>
+                )
+              )}
               </Text>
             ) : (
               <View className="items-center py-4">
-                <Icon name="🔍" size={24} color="#94a3b8" />
-                <Text className="text-dark-text-muted mt-2 text-center text-sm">
-                  AI summary not available at this time
-                </Text>
-                <TouchableOpacity 
-                  onPress={() => coin.address && loadCoinData(coin.address)}
-                  className="mt-2"
-                >
-                  <Text className="text-hawk-accent text-sm">Try Again</Text>
-                </TouchableOpacity>
+              <Icon name="🔍" size={24} color="#94a3b8" />
+              <Text className="text-dark-text-muted mt-2 text-center text-sm">
+                AI summary not available at this time
+              </Text>
+              <TouchableOpacity 
+                onPress={() => coin.address && loadCoinData(coin.address)}
+                className="mt-2"
+              >
+                <Text className="text-hawk-accent text-sm">Try Again</Text>
+              </TouchableOpacity>
               </View>
             )}
-          </Card>
+            </Card>
         </View>
 
         {/* Additional Info */}

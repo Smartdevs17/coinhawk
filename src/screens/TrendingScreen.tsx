@@ -1,5 +1,3 @@
-// Replace src/screens/TrendingScreen.tsx with this:
-
 import React, { useState } from 'react';
 import {
   View,
@@ -88,18 +86,28 @@ export const TrendingScreen: React.FC = () => {
           </View>
           
           {/* Coin Info */}
-          <View className="flex-1">
-            <View className="flex-row items-center mb-1">
-              <Text className="text-dark-text-primary font-semibold mr-2">
+          <View className="flex-1 min-w-0">
+            <View className="flex-row items-center mb-1 flex-wrap">
+              <Text 
+                className="text-dark-text-primary font-semibold mr-2 text-sm sm:text-base flex-shrink"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
                 {item.name}
               </Text>
               {item.verified && (
-                <Icon name="✓" size={14} color="#10b981" />
+                <Icon name="✓" size={12} color="#10b981" className="sm:size-14 flex-shrink-0" />
               )}
             </View>
-            <Text className="text-dark-text-secondary text-sm">{item.symbol}</Text>
-            <Text className="text-dark-text-muted text-xs mt-1">
-              {item.holders.toLocaleString()} holders
+            <Text 
+              className="text-dark-text-secondary text-xs sm:text-sm"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item.symbol}
+            </Text>
+            <Text className="text-dark-text-muted text-xs mt-0.5 sm:mt-1">
+              {item.holders?.toLocaleString() ?? '0'} holders
             </Text>
           </View>
 
@@ -239,38 +247,38 @@ export const TrendingScreen: React.FC = () => {
             {coins.length} results
           </Text>
           
-          <View className="relative">
+            <View className="relative">
             <Button
               title={`Sort: ${selectedSort}`}
               variant="ghost"
               size="sm"
-              icon={<Icon name="⏷" size={12} color="#fbbf24" />}
+              icon={<Icon name="⇅" size={20} color="#fbbf24" />} // Cool sorting icon
               onPress={() => setShowSortDropdown(!showSortDropdown)}
             />
             
             {showSortDropdown && (
               <View className="absolute top-full right-0 mt-1 bg-dark-surface border border-dark-border rounded-xl py-2 z-10 min-w-32">
-                {sortOptions.map((option) => (
-                  <TouchableOpacity
-                    key={option}
-                    onPress={() => {
-                      setSelectedSort(option as any);
-                      setShowSortDropdown(false);
-                    }}
-                    className="px-4 py-2"
-                  >
-                    <Text className={`text-sm ${
-                      selectedSort === option 
-                        ? 'text-hawk-accent font-semibold' 
-                        : 'text-dark-text-secondary'
-                    }`}>
-                      {option}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+              {sortOptions.map((option) => (
+                <TouchableOpacity
+                key={option}
+                onPress={() => {
+                  setSelectedSort(option as any);
+                  setShowSortDropdown(false);
+                }}
+                className="px-4 py-2"
+                >
+                <Text className={`text-sm ${
+                  selectedSort === option 
+                  ? 'text-hawk-accent font-semibold' 
+                  : 'text-dark-text-secondary'
+                }`}>
+                  {option}
+                </Text>
+                </TouchableOpacity>
+              ))}
               </View>
             )}
-          </View>
+            </View>
         </View>
       </View>
 
