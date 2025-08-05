@@ -168,7 +168,7 @@ export const HomeScreen: React.FC = () => {
       <View className="flex-row items-center justify-between px-4 py-8 mt-4 mb-1 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center">
           <Icon name="🦅" size={24} />
-          <Text className="text-xl font-bold text-dark-text-primary ml-2">CoinHawk</Text>
+          <Text className="text-xl font-bold text-dark-text-primary ml-2">BaseGecko</Text>
         </View>
         <View className="flex-row">
           <TouchableOpacity className="mr-3">

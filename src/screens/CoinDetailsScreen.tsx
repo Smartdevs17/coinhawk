@@ -85,8 +85,8 @@ export const CoinDetailsScreen: React.FC = () => {
     
     try {
       await Share.share({
-        message: `Check out ${coin.name} (${coin.symbol}) on CoinHawk! 🦅\nPrice: ${coin.price}\nChange: ${coin.change24h}`,
-        title: `${coin.name} - CoinHawk`,
+        message: `Check out ${coin.name} (${coin.symbol}) on BaseGecko! 🦅\nPrice: ${coin.price}\nChange: ${coin.change24h}`,
+        title: `${coin.name} - BaseGecko`,
       });
     } catch (error) {
       console.error('Error sharing:', error);

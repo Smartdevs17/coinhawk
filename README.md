@@ -1,4 +1,4 @@
-# 🦅 CoinHawk
+# 🦅 BaseGecko
 
 A React Native mobile app for trading tokenized Farcaster posts.
 

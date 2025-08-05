@@ -1,7 +1,7 @@
 #!/bin/bash
-# build-apk.sh - Automated APK builder for CoinHawk
+# build-apk.sh - Automated APK builder for BaseGecko
 
-echo "🦅 Building CoinHawk APK for distribution..."
+echo "🦅 Building BaseGecko APK for distribution..."
 
 # Step 1: Clean previous builds
 echo "🧹 Cleaning previous builds..."

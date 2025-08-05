@@ -10,7 +10,7 @@
     "build:apk": "npx expo export --platform android && npx expo run:android --variant release",
     "build:debug-apk": "npx expo export --platform android && npx expo run:android --variant debug",
     "build:gradle": "npx expo prebuild --platform android && cd android && ./gradlew assembleRelease && cd ..",
-    "copy:apk": "cp android/app/build/outputs/apk/release/app-release.apk ./CoinHawk-$(date +%Y%m%d).apk && ls -lh CoinHawk-*.apk",
+    "copy:apk": "cp android/app/build/outputs/apk/release/app-release.apk ./BaseGecko-$(date +%Y%m%d).apk && ls -lh BaseGecko-*.apk",
     "clean:build": "rm -rf android/app/build && rm -rf .expo"
   },
   "dependencies": {

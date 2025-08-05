@@ -1,4 +1,4 @@
-export const APP_NAME = 'CoinHawk';
+export const APP_NAME = 'BaseGecko';
 export const APP_VERSION = '1.0.0';
 
 // Move TIMEFRAMES here since we moved the type to types file
@@ -32,7 +32,7 @@ export const MOCK_TRENDING_POSTS: CoinPost[] = [
   },
   {
     id: '3',
-    name: 'CoinHawk Token',
+    name: 'BaseGecko Token',
     symbol: 'HAWK',
     price: '$1.2567',
     change24h: '+8.9%',

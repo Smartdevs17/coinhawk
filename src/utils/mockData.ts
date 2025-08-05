@@ -30,7 +30,7 @@ export const EXTENDED_TRENDING_POSTS: CoinPost[] = [
   },
   {
     id: '3',
-    name: 'CoinHawk Token',
+    name: 'BaseGecko Token',
     symbol: 'HAWK',
     price: '$1.2567',
     change24h: '+8.9%',
@@ -39,7 +39,7 @@ export const EXTENDED_TRENDING_POSTS: CoinPost[] = [
     holders: 15234,
     verified: true,
     rank: 3,
-    description: 'Native utility token for the CoinHawk trading platform and ecosystem.',
+    description: 'Native utility token for the BaseGecko trading platform and ecosystem.',
   },
   {
     id: '4',

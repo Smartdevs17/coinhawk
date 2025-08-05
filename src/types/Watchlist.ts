@@ -1,4 +1,4 @@
-// Watchlist-specific types for CoinHawk
+// Watchlist-specific types for BaseGecko
 export interface PriceAlert {
   id: string;
   coinPostId: string;
