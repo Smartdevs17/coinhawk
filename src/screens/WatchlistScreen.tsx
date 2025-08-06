@@ -1,5 +1,3 @@
-// screens/WatchlistScreen.tsx - Improved with better data integration
-
 import React, { useState } from 'react';
 import {
   View,
@@ -56,6 +54,11 @@ export const WatchlistScreen: React.FC = () => {
         break;
     }
   });
+
+  // Remove default TBD coin from watchlist
+  const filteredWatchlistCoins = watchlistCoins.filter(
+    (coin) => coin.symbol !== 'TBD' && coin.name.toLowerCase() !== 'tbd'
+  );
 
   // Local UI state
   const [showAddModal, setShowAddModal] = useState(false);
@@ -413,7 +416,7 @@ export const WatchlistScreen: React.FC = () => {
         <View className="flex-row justify-between">
           <View className="items-center">
             <Text className="text-hawk-accent text-lg font-bold">
-              {watchlistCoins.length}
+              {filteredWatchlistCoins.length}
             </Text>
             <Text className="text-dark-text-secondary text-xs">Watching</Text>
           </View>
@@ -425,13 +428,13 @@ export const WatchlistScreen: React.FC = () => {
           </View>
           <View className="items-center">
             <Text className="text-success-500 text-lg font-bold">
-              {watchlistCoins.filter(c => c.change24h.startsWith('+')).length}
+              {filteredWatchlistCoins.filter(c => c.change24h.startsWith('+')).length}
             </Text>
             <Text className="text-dark-text-secondary text-xs">Gainers</Text>
           </View>
           <View className="items-center">
             <Text className="text-danger-500 text-lg font-bold">
-              {watchlistCoins.filter(c => c.change24h.startsWith('-')).length}
+              {filteredWatchlistCoins.filter(c => c.change24h.startsWith('-')).length}
             </Text>
             <Text className="text-dark-text-secondary text-xs">Losers</Text>
           </View>
@@ -452,13 +455,13 @@ export const WatchlistScreen: React.FC = () => {
         }
       >
         {/* Watchlist Items */}
-        {watchlistCoins.length > 0 ? (
+        {filteredWatchlistCoins.length > 0 ? (
           <View className="py-4 px-4">
             <Text className="text-dark-text-primary font-semibold text-lg mb-3">
               📌 Your Watchlist
             </Text>
             <FlatList
-              data={watchlistCoins}
+              data={filteredWatchlistCoins}
               renderItem={renderWatchlistItem}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}

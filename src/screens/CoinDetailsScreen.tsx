@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Share,
   Alert,
+  Linking,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -15,7 +16,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CoinPost } from '../types';
 import { Icon, LoadingSpinner, Button, Card } from '../components/ui';
+import { Toast, useToast } from '../components/ui/Toast';
 import { getCoinDetails, getCoinSummary } from '../services/api';
+import { useWatchlist } from '../hooks/useWatchlist';
 
 // Navigation types
 type RootStackParamList = {
@@ -30,6 +33,14 @@ type CoinDetailsScreenNavigationProp = StackNavigationProp<RootStackParamList, '
 type CoinDetailsScreenRouteProp = RouteProp<RootStackParamList, 'CoinDetails'>;
 
 export const CoinDetailsScreen: React.FC = () => {
+  // Open GeckoTerminal for this coin
+  const handleOpenGeckoTerminal = () => {
+    if (!coin?.address) return;
+    const url = `https://www.geckoterminal.com/base/pools/${coin.address}`;
+    Linking.openURL(url);
+  };
+  // Toast system
+  const { toast, showSuccess, showError, showWarning, showInfo, hideToast } = useToast();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<CoinDetailsScreenNavigationProp>();
   const route = useRoute<CoinDetailsScreenRouteProp>();
@@ -40,7 +51,22 @@ export const CoinDetailsScreen: React.FC = () => {
   const [aiSummary, setAiSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
-  const [isWatchlisted, setIsWatchlisted] = useState(false);
+  // Watchlist integration
+  const {
+    watchlistCoins,
+    addToWatchlist,
+    removeFromWatchlist,
+  } = useWatchlist();
+
+  // Local state to force instant UI update for star icon
+  const [localWatchlisted, setLocalWatchlisted] = useState<boolean | null>(null);
+  // Determine if this coin is in the watchlist
+  const isWatchlisted =
+    localWatchlisted !== null
+      ? localWatchlisted
+      : coin
+        ? watchlistCoins.some(c => c.id === coin.id)
+        : false;
 
   // Load coin details and AI summary
   const loadCoinData = async (address: string) => {
@@ -75,10 +101,35 @@ export const CoinDetailsScreen: React.FC = () => {
     }
   }, [coinId, coin?.address]);
 
-  const handleWatchlist = () => {
-    setIsWatchlisted(!isWatchlisted);
-    // TODO: Call watchlist API
+  const handleWatchlist = async () => {
+    if (!coin) return;
+    if (isWatchlisted) {
+      setLocalWatchlisted(false); // Optimistic update
+      const removed = await removeFromWatchlist(coin.id, coin.name);
+      if (removed) {
+        showSuccess(`${coin.name} removed from watchlist`);
+      } else {
+        setLocalWatchlisted(null); // Revert if failed
+        showError(`Failed to remove ${coin.name} from watchlist`);
+      }
+    } else {
+      setLocalWatchlisted(true); // Optimistic update
+      const added = await addToWatchlist(coin.id, coin.name);
+      if (added) {
+        showSuccess(`${coin.name} added to watchlist!`);
+      } else {
+        setLocalWatchlisted(null); // Revert if failed
+        showError(`Failed to add ${coin.name} to watchlist`);
+      }
+    }
   };
+  // Sync localWatchlisted with global state if watchlistCoins changes (e.g. from another screen)
+  useEffect(() => {
+    if (coin) {
+      setLocalWatchlisted(null);
+    }
+    // eslint-disable-next-line
+  }, [watchlistCoins.length, coin?.id]);
 
   const handleShare = async () => {
     if (!coin) return;
@@ -132,8 +183,16 @@ export const CoinDetailsScreen: React.FC = () => {
     );
   }
 
+
   return (
     <SafeAreaView className="flex-1 bg-dark-bg">
+      {/* Toast Notification */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onHide={hideToast}
+      />
       {/* Header - Add extra top padding */}
       <View
         className="flex-row items-center justify-between px-4 py-2 bg-dark-surface border-b border-dark-border"
@@ -162,9 +221,6 @@ export const CoinDetailsScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-
-// Replace the ScrollView and bottom buttons section in your CoinDetailsScreen:
-
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -310,7 +366,14 @@ export const CoinDetailsScreen: React.FC = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
-              
+              {/* GeckoTerminal Button */}
+              <View className="flex-row justify-between items-center border-t border-dark-border pt-2">
+                <Text className="text-dark-text-muted text-sm">GeckoTerminal</Text>
+                <TouchableOpacity onPress={handleOpenGeckoTerminal} className="flex-row items-center">
+                  <Icon name="🌐" size={16} color="#fbbf24" />
+                  <Text className="text-hawk-accent font-medium ml-2">Open</Text>
+                </TouchableOpacity>
+              </View>
               {coin.createdAt && (
                 <View className="flex-row justify-between items-center border-t border-dark-border pt-2">
                   <Text className="text-dark-text-muted text-sm">Created</Text>
@@ -319,7 +382,6 @@ export const CoinDetailsScreen: React.FC = () => {
                   </Text>
                 </View>
               )}
-              
               <View className="flex-row justify-between items-center border-t border-dark-border pt-2">
                 <Text className="text-dark-text-muted text-sm">Network</Text>
                 <Text className="text-dark-text-secondary text-sm">Base</Text>

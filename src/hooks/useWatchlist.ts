@@ -1,6 +1,5 @@
-// hooks/useWatchlist.ts - Enhanced with better data integration
-
 import { useState, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   CoinPost, 
   PriceAlert, 
@@ -13,7 +12,7 @@ import {
   watchlistApi,
 } from '../services/api';
 
-interface UseWatchlistReturn {
+export interface UseWatchlistReturn {
   // Data
   watchlistCoins: WatchlistItem[];
   availableCoins: CoinPost[];
@@ -99,25 +98,44 @@ export const useWatchlist = (
     }
   }, []);
 
+  // Persist watchlist and alerts to AsyncStorage
+  const persistWatchlist = async (ids: string[]) => {
+    try {
+      await AsyncStorage.setItem('watchlistIds', JSON.stringify(ids));
+    } catch (e) {
+      // ignore
+    }
+  };
+  const persistAlerts = async (alerts: PriceAlert[]) => {
+    try {
+      await AsyncStorage.setItem('watchlistAlerts', JSON.stringify(alerts));
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  // Load persisted watchlist and alerts from AsyncStorage
+  const loadPersistedWatchlist = async () => {
+    try {
+      const ids = await AsyncStorage.getItem('watchlistIds');
+      if (ids) setWatchlistIds(JSON.parse(ids));
+    } catch (e) {}
+  };
+  const loadPersistedAlerts = async () => {
+    try {
+      const alertsStr = await AsyncStorage.getItem('watchlistAlerts');
+      if (alertsStr) setAlerts(JSON.parse(alertsStr));
+    } catch (e) {}
+  };
+
   // Initialize data
   const initializeData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Fetch watchlist IDs and alerts in parallel
-      const [watchlistResponse, alertsResponse] = await Promise.all([
-        watchlistApi.getWatchlist(),
-        watchlistApi.getAlerts()
-      ]);
-
-      if (watchlistResponse.success) {
-        setWatchlistIds(watchlistResponse.data);
-      }
-
-      if (alertsResponse.success) {
-        setAlerts(alertsResponse.data);
-      }
+      // Load persisted watchlist and alerts first
+      await Promise.all([loadPersistedWatchlist(), loadPersistedAlerts()]);
 
       // Load all coins data
       await loadAllCoinsData();
@@ -156,18 +174,18 @@ export const useWatchlist = (
   // Actions with toast feedback (unchanged logic)
   const addToWatchlist = useCallback(async (coinId: string, coinName?: string): Promise<boolean> => {
     try {
-      const response = await watchlistApi.addToWatchlist(coinId);
-      
-      if (response.success) {
-        setWatchlistIds(prev => [...prev, coinId]);
-        setError(null);
-        showToast(
-          `${coinName || 'Coin'} added to watchlist successfully!`, 
-          'success'
-        );
-        return true;
-      }
-      return false;
+      // Locally add to watchlist
+      setWatchlistIds(prev => {
+        const updated = [...prev, coinId];
+        persistWatchlist(updated);
+        return updated;
+      });
+      setError(null);
+      showToast(
+        `${coinName || 'Coin'} added to watchlist successfully!`, 
+        'success'
+      );
+      return true;
     } catch (err) {
       console.error('Error adding to watchlist:', err);
       const errorMessage = `Failed to add ${coinName || 'coin'} to watchlist`;
@@ -179,19 +197,22 @@ export const useWatchlist = (
 
   const removeFromWatchlist = useCallback(async (coinId: string, coinName?: string): Promise<boolean> => {
     try {
-      const response = await watchlistApi.removeFromWatchlist(coinId);
-      
-      if (response.success) {
-        setWatchlistIds(prev => prev.filter(id => id !== coinId));
-        setAlerts(prev => prev.filter(alert => alert.coinPostId !== coinId));
-        setError(null);
-        showToast(
-          `${coinName || 'Coin'} removed from watchlist`, 
-          'success'
-        );
-        return true;
-      }
-      return false;
+      setWatchlistIds(prev => {
+        const updated = prev.filter(id => id !== coinId);
+        persistWatchlist(updated);
+        return updated;
+      });
+      setAlerts(prev => {
+        const updated = prev.filter(alert => alert.coinPostId !== coinId);
+        persistAlerts(updated);
+        return updated;
+      });
+      setError(null);
+      showToast(
+        `${coinName || 'Coin'} removed from watchlist`, 
+        'success'
+      );
+      return true;
     } catch (err) {
       console.error('Error removing from watchlist:', err);
       const errorMessage = `Failed to remove ${coinName || 'coin'} from watchlist`;
@@ -206,18 +227,23 @@ export const useWatchlist = (
     coinName?: string
   ): Promise<boolean> => {
     try {
-      const response = await watchlistApi.createAlert(alertData);
-      
-      if (response.success) {
-        setAlerts(prev => [...prev, response.data]);
-        setError(null);
-        showToast(
-          `Price alert created for ${coinName || 'coin'}!`, 
-          'success'
-        );
-        return true;
-      }
-      return false;
+      // Locally create alert
+      const newAlert: PriceAlert = {
+        ...alertData,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+      };
+      setAlerts(prev => {
+        const updated = [...prev, newAlert];
+        persistAlerts(updated);
+        return updated;
+      });
+      setError(null);
+      showToast(
+        `Price alert created for ${coinName || 'coin'}!`, 
+        'success'
+      );
+      return true;
     } catch (err) {
       console.error('Error creating alert:', err);
       const errorMessage = `Failed to create price alert for ${coinName || 'coin'}`;
@@ -229,31 +255,21 @@ export const useWatchlist = (
 
   const toggleAlert = useCallback(async (alertId: string, coinName?: string): Promise<boolean> => {
     try {
-      const alert = alerts.find(a => a.id === alertId);
-      if (!alert) return false;
-
-      const response = await watchlistApi.updateAlert(alertId, {
-        isActive: !alert.isActive
+      setAlerts(prev => {
+        const updated = prev.map(a =>
+          a.id === alertId ? { ...a, isActive: !a.isActive } : a
+        );
+        persistAlerts(updated);
+        return updated;
       });
-      
-      if (response.success) {
-        setAlerts(prev => 
-          prev.map(a => 
-            a.id === alertId 
-              ? { ...a, isActive: !a.isActive }
-              : a
-          )
-        );
-        setError(null);
-        
-        const statusText = !alert.isActive ? 'activated' : 'deactivated';
-        showToast(
-          `Alert ${statusText} for ${coinName || 'coin'}`, 
-          'success'
-        );
-        return true;
-      }
-      return false;
+      setError(null);
+      const alert = alerts.find(a => a.id === alertId);
+      const statusText = alert && !alert.isActive ? 'activated' : 'deactivated';
+      showToast(
+        `Alert ${statusText} for ${coinName || 'coin'}`, 
+        'success'
+      );
+      return true;
     } catch (err) {
       console.error('Error toggling alert:', err);
       const errorMessage = `Failed to update alert for ${coinName || 'coin'}`;
@@ -265,18 +281,17 @@ export const useWatchlist = (
 
   const deleteAlert = useCallback(async (alertId: string, coinName?: string): Promise<boolean> => {
     try {
-      const response = await watchlistApi.deleteAlert(alertId);
-      
-      if (response.success) {
-        setAlerts(prev => prev.filter(a => a.id !== alertId));
-        setError(null);
-        showToast(
-          `Alert deleted for ${coinName || 'coin'}`, 
-          'success'
-        );
-        return true;
-      }
-      return false;
+      setAlerts(prev => {
+        const updated = prev.filter(a => a.id !== alertId);
+        persistAlerts(updated);
+        return updated;
+      });
+      setError(null);
+      showToast(
+        `Alert deleted for ${coinName || 'coin'}`, 
+        'success'
+      );
+      return true;
     } catch (err) {
       console.error('Error deleting alert:', err);
       const errorMessage = `Failed to delete alert for ${coinName || 'coin'}`;
@@ -291,23 +306,11 @@ export const useWatchlist = (
       setRefreshing(true);
       setError(null);
 
-      // Refresh watchlist and alerts
-      const [watchlistResponse, alertsResponse] = await Promise.all([
-        watchlistApi.getWatchlist(),
-        watchlistApi.getAlerts()
-      ]);
-
-      if (watchlistResponse.success) {
-        setWatchlistIds(watchlistResponse.data);
-      }
-
-      if (alertsResponse.success) {
-        setAlerts(alertsResponse.data);
-      }
+      // Reload persisted watchlist and alerts
+      await Promise.all([loadPersistedWatchlist(), loadPersistedAlerts()]);
 
       // Refresh all coins data
       await loadAllCoinsData();
-      
       // showToast('Watchlist refreshed successfully!', 'success');
 
     } catch (err) {

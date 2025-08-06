@@ -7,11 +7,12 @@ import {
   SafeAreaView,
   FlatList,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 
-// Import our types and utilities
+// Import our types and utilitiesma
 import { CoinPost } from '../types';
 import { MOCK_MARKET_DATA } from '../utils';
 import { Icon, LoadingSpinner } from '../components/ui';
@@ -41,8 +42,11 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [selectedCategory, setSelectedCategory] = useState<CoinCategory>('trending');
   const [coins, setCoins] = useState<CoinPost[]>([]);
+  const [allCoins, setAllCoins] = useState<CoinPost[]>([]); // for search
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Load coins for the selected category
   const loadCoins = async (category: CoinCategory, isRefresh = false) => {
@@ -54,18 +58,35 @@ export const HomeScreen: React.FC = () => {
 
     try {
       const data = await getCoinsByCategory(category);
-      // Ensure we have valid data and limit to 10 coins
-      const validCoins = (data || []).slice(0, 10);
-      setCoins(validCoins);
+      // Save all coins for search
+      setAllCoins(data || []);
+      // Default: show up to 10 coins
+      setCoins((data || []).slice(0, 10));
     } catch (error) {
       console.error('Failed to load coins:', error);
-      // Fallback to empty array on error
       setCoins([]);
+      setAllCoins([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
+  // Search/filter coins
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setCoins(allCoins.slice(0, 10));
+      return;
+    }
+    setSearchLoading(true);
+    const q = searchQuery.toLowerCase();
+    const filtered = allCoins.filter(
+      (coin) =>
+        coin.name.toLowerCase().includes(q) ||
+        coin.symbol.toLowerCase().includes(q)
+    );
+    setCoins(filtered);
+    setSearchLoading(false);
+  }, [searchQuery, allCoins]);
 
   // Load coins when category changes
   useEffect(() => {
@@ -163,7 +184,7 @@ export const HomeScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-dark-bg">      
+    <SafeAreaView className="flex-1 bg-dark-bg">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-8 mt-4 mb-1 bg-dark-surface border-b border-dark-border">
         <View className="flex-row items-center">
@@ -180,6 +201,23 @@ export const HomeScreen: React.FC = () => {
         </View>
       </View>
 
+      {/* Search Bar */}
+      <View className="px-4 mt-4 mb-2">
+        <View className="bg-dark-bg rounded-xl px-4 py-3 flex-row items-center border border-dark-border">
+          <Icon name="🔍" size={16} color="#94a3b8" />
+          <TextInput
+            placeholder="Search coins..."
+            placeholderTextColor="#94a3b8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            className="flex-1 ml-3 text-dark-text-primary"
+          />
+          {searchLoading && (
+            <LoadingSpinner size="small" />
+          )}
+        </View>
+      </View>
+
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
@@ -188,25 +226,7 @@ export const HomeScreen: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Market Overview */}
-        <View className="p-4">
-          <Text className="text-lg font-semibold text-dark-text-primary mb-3">
-            Market Overview
-          </Text>
-          <View className="bg-dark-surface rounded-2xl p-4 border border-dark-border">
-            <Text className="text-sm text-dark-text-secondary mb-1">
-              Total Market Cap
-            </Text>
-            <Text className="text-2xl font-bold text-dark-text-primary">
-              {MOCK_MARKET_DATA?.totalMarketCap || '$0'}
-            </Text>
-            <Text className="text-sm text-success-500 mt-1">
-              ▲ {MOCK_MARKET_DATA?.changePercent24h || '0%'} (24h)
-            </Text>
-          </View>
-        </View>
-
-        {/* Category Selector - Replacing Timeframe Selector */}
+        {/* Category Selector */}
         <View className="px-4 mb-4">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <View className="flex-row gap-x-2">
@@ -240,8 +260,6 @@ export const HomeScreen: React.FC = () => {
 
         {/* Category Section */}
         <View className="px-4">
-        
-          
           {/* Loading State */}
           {loading && (
             <View className="py-8 items-center">
