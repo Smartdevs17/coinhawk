@@ -22,20 +22,20 @@ if [ -f "android/app/build/outputs/apk/release/app-release.apk" ]; then
     
     # Step 4: Copy APK with descriptive name
     TIMESTAMP=$(date +"%Y%m%d_%H%M")
-    cp android/app/build/outputs/apk/release/app-release.apk "./CoinHawk_v${TIMESTAMP}.apk"
+    cp android/app/build/outputs/apk/release/app-release.apk "./BaseGecko_v${TIMESTAMP}.apk"
     
     # Step 5: Show APK info
-    echo "📱 APK created: CoinHawk_v${TIMESTAMP}.apk"
-    echo "📊 APK size: $(ls -lh CoinHawk_v${TIMESTAMP}.apk | awk '{print $5}')"
-    echo "📍 Location: $(pwd)/CoinHawk_v${TIMESTAMP}.apk"
+    echo "📱 APK created: BaseGecko_v${TIMESTAMP}.apk"
+    echo "📊 APK size: $(ls -lh BaseGecko_v${TIMESTAMP}.apk | awk '{print $5}')"
+    echo "📍 Location: $(pwd)/BaseGecko_v${TIMESTAMP}.apk"
     
     # Step 6: Verify APK
     echo "🔍 Verifying APK..."
     if command -v aapt &> /dev/null; then
-        aapt dump badging "CoinHawk_v${TIMESTAMP}.apk" | grep -E "package|application-label"
+        aapt dump badging "BaseGecko_v${TIMESTAMP}.apk" | grep -E "package|application-label"
     fi
     
-    echo "🎉 Ready to share! Send CoinHawk_v${TIMESTAMP}.apk to your testers."
+    echo "🎉 Ready to share! Send BaseGecko_v${TIMESTAMP}.apk to your testers."
     
 else
     echo "❌ Build failed! Check the output above for errors."
